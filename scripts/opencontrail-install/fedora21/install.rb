@@ -12,6 +12,7 @@
     "strace",
     "tcpdump",
     "unzip",
+    "vim",
 ]
 
 @controller_thirdparty_packages = [
