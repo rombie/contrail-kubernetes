@@ -25,6 +25,8 @@ class ContrailClient(object):
         self._net_mode = "bridge"
         self._readconfig()
         self._client = opencontrail.VncApi(api_server_host=self._server)
+        self._default_network = "default"
+        self._default_subnet = "10.0.0.0/8"
 
     def _readconfig(self):
         """ Expects a configuration file in the same directory as the
@@ -111,6 +113,14 @@ class ContrailClient(object):
         # self._locate_default_security_group(project)
         return project
 
+    def FindNetwork(self, project, network_name):
+        fqn = project.get_fq_name() + [network_name]
+        try:
+            network = self._client.virtual_network_read(fq_name=fqn)
+        except opencontrail.NoIdError:
+            pass:
+        return network
+
     def LocateNetwork(self, project, network_name):
         def _add_subnet(network, subnet):
             fqn = project.get_fq_name() + ['default-network-ipam']
@@ -133,7 +143,7 @@ class ContrailClient(object):
             logging.debug('Creating network %s' % network_name)
             network = opencontrail.VirtualNetwork(
                 network_name, parent_obj=project)
-            _add_subnet(network, '10.0.0.0/8')
+            _add_subnet(network, self._default_subnet)
             self._client.virtual_network_create(network)
 
         return network
@@ -161,7 +171,17 @@ def setup(pod_namespace, pod_name, docker_id):
     client = ContrailClient()
     project = client.LocateProject(pod_namespace)
     # client.LocateNetwork(pod_name)
-    network = client.LocateNetwork(project, 'default')
+    network = client.FindNetwork(project, client._default_network)
+    if not network:
+        network = client.LocateNetwork(project, client._default_network)
+
+        # Create virtual gateway to this network for external connectivity.
+        Shell.run("python /opt/contrail/utils/provision_vgw_interface.py "
+                  "--oper create --interface vgw_%s --subnets %s "
+                  "--routes 0.0.0.0/0 --vrf default-domain:default:%s:%s" \
+                  % (ifname, client._default_subnet, client._default_network,
+                     client._default_network))
+
 
     # Kubelet::createPodInfraContainer ensures that State.Pid is set
     pid = docker_get_pid(docker_id)
@@ -197,7 +217,6 @@ def setup(pod_namespace, pod_name, docker_id):
     Shell.run('ip netns exec %s ip link set %s up' %
               (short_id, instance_ifname))
 
-
 def teardown(pod_namespace, pod_name, docker_id):
     client = ContrailClient()
     provisioner = Provisioner(api_server=client._server)
@@ -220,6 +239,10 @@ def teardown(pod_namespace, pod_name, docker_id):
 
     Shell.run('ip netns delete %s' % short_id)
 
+    # When last VMI is deleted, delete the network and associated vgw as well.
+    # Shell.run("python /opt/contrail/utils/provision_vgw_interface.py "
+    #          "--oper delete --interface vgw_%s --subnets %s " \
+    #          % (ifname, client._default_subnet))
 
 def main():
     logging.basicConfig(filename='/var/log/contrail/kubelet-driver.log',
