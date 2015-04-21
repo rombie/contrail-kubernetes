@@ -3,7 +3,7 @@
 # Use this script to install and provision contrail nodes.
 # sudo ruby $PWD/contrail-kubernetes/scripts/opencontrail-install/contrail_install.rb
 
-raise 'Must run as root' unless Process.uid == 0
+raise 'Must run with superuser privilages' unless Process.uid == 0
 
 @ws="#{File.dirname($0)}"
 require "#{@ws}/util"
@@ -148,7 +148,7 @@ def provision_contrail_compute
 end
 
 def provision_contrail_compute_kubernetes
-    Dir.chdir("#{@ws}/scripts/opencontrail-kubelet")
+    Dir.chdir("#{@ws}/../opencontrail-kubelet")
     sh("python setup.py install")
     plugin = "opencontrail"
     sh("mkdir -p /usr/libexec/kubernetes/kubelet-plugins/net/exec/#{plugin}")
