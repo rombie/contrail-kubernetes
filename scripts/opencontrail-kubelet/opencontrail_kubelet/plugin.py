@@ -171,17 +171,14 @@ def setup(pod_namespace, pod_name, docker_id):
     client = ContrailClient()
     project = client.LocateProject(pod_namespace)
     # client.LocateNetwork(pod_name)
-    network = client.FindNetwork(project, client._default_network)
-    if not network:
-        network = client.LocateNetwork(project, client._default_network)
+    network = client.LocateNetwork(project, client._default_network)
 
-        # Create virtual gateway to this network for external connectivity.
-        Shell.run("python /opt/contrail/utils/provision_vgw_interface.py "
-                  "--oper create --interface vgw_%s --subnets %s "
-                  "--routes 0.0.0.0/0 --vrf default-domain:default:%s:%s" \
-                  % (ifname, client._default_subnet, client._default_network,
-                     client._default_network))
-
+    # Create virtual gateway for this network.
+    Shell.run("python /opt/contrail/utils/provision_vgw_interface.py "
+              "--oper create --interface vgw_%s --subnets %s "
+              "--routes 0.0.0.0/0 --vrf default-domain:default:%s:%s" \
+              % (client._default_network, client._default_subnet,
+                 client._default_network, client._default_network))
 
     # Kubelet::createPodInfraContainer ensures that State.Pid is set
     pid = docker_get_pid(docker_id)
@@ -241,8 +238,8 @@ def teardown(pod_namespace, pod_name, docker_id):
 
     # When last VMI is deleted, delete the network and associated vgw as well.
     # Shell.run("python /opt/contrail/utils/provision_vgw_interface.py "
-    #          "--oper delete --interface vgw_%s --subnets %s " \
-    #          % (ifname, client._default_subnet))
+    #           "--oper delete --interface vgw_%s --subnets %s " \
+    #           % (client._default_network, client._default_subnet))
 
 def main():
     logging.basicConfig(filename='/var/log/contrail/kubelet-driver.log',
