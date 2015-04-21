@@ -26,7 +26,7 @@ class ContrailClient(object):
         self._readconfig()
         self._client = opencontrail.VncApi(api_server_host=self._server)
         self._default_network = "default"
-        self._default_subnet = "10.0.0.0/8"
+        self._default_subnet = "192.168.0.0/16"
 
     def _readconfig(self):
         """ Expects a configuration file in the same directory as the
