@@ -30,3 +30,24 @@ def sh_container(container_id, cmd, ignore = false)
     pid = sh(%{docker inspect -f {{.State.Pid}} #{container_id}})
     sh(%{echo #{cmd} | nsenter -n -t #{pid} sh})
 end
+
+# Ping between two docker containers
+def docker_ping()
+    ips = [ ]
+    pids = [ ]
+    `docker ps |\grep pause |\grep front | awk '{print $1}'`.chomp.split.each { |docker|
+        pid=`docker inspect -f {{.State.Pid}} #{docker}`.chomp
+        cmd = %{echo ip address show dev eth0 | nsenter -n -t #{pid} sh | \grep -w inet | awk '{print $2}' | cut -d '/' -f 1}
+        pids.push pid
+        ips.push `#{cmd}`.chomp
+    }
+
+    cmd = %{echo ping -qc 1 #{ips[1]} | nsenter -n -t #{pids[0]} sh}
+    puts cmd
+    puts `#{cmd}`
+    cmd = %{echo ping -qc 1 #{ips[0]} | nsenter -n -t #{pids[1]} sh}
+    puts cmd
+    puts `#{cmd}`
+end
+
+docker_ping if __FILE__ == $0
