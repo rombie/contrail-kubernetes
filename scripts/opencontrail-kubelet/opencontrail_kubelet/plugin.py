@@ -113,14 +113,6 @@ class ContrailClient(object):
         # self._locate_default_security_group(project)
         return project
 
-    def FindNetwork(self, project, network_name):
-        fqn = project.get_fq_name() + [network_name]
-        try:
-            network = self._client.virtual_network_read(fq_name=fqn)
-        except opencontrail.NoIdError:
-            pass:
-        return network
-
     def LocateNetwork(self, project, network_name):
         def _add_subnet(network, subnet):
             fqn = project.get_fq_name() + ['default-network-ipam']
@@ -174,11 +166,11 @@ def setup(pod_namespace, pod_name, docker_id):
     network = client.LocateNetwork(project, client._default_network)
 
     # Create virtual gateway for this network.
-    Shell.run("python /opt/contrail/utils/provision_vgw_interface.py "
-              "--oper create --interface vgw_%s --subnets %s "
-              "--routes 0.0.0.0/0 --vrf default-domain:default:%s:%s" \
-              % (client._default_network, client._default_subnet,
-                 client._default_network, client._default_network))
+   # Shell.run("python /opt/contrail/utils/provision_vgw_interface.py "
+   #           "--oper create --interface vgw_%s --subnets %s "
+   #           "--routes 0.0.0.0/0 --vrf default-domain:default:%s:%s" \
+   #           % (client._default_network, client._default_subnet,
+   #              client._default_network, client._default_network))
 
     # Kubelet::createPodInfraContainer ensures that State.Pid is set
     pid = docker_get_pid(docker_id)
