@@ -43,6 +43,13 @@
     "#{@ws}/thirdparty/java-1.7.0-openjdk-headless-1.7.0.55-2.4.7.2.el7_0.x86_64.rpm",
     "#{@ws}/thirdparty/log4j-1.2.17-15.el7.noarch.rpm",
 
+    "#{@ws}/thirdparty/boost-1.48.0-11.fc17.x86_64.rpm",
+    "#{@ws}/thirdparty/boost-filesystem-1.48.0-11.fc17.x86_64.rpm",
+    "#{@ws}/thirdparty/boost-program-options-1.48.0-11.fc17.x86_64.rpm",
+    "#{@ws}/thirdparty/boost-regex-1.48.0-11.fc17.x86_64.rpm",
+    "#{@ws}/thirdparty/boost-chrono-1.48.0-11.fc17.x86_64.rpm",
+    "#{@ws}/thirdparty/boost-system-1.48.0-11.fc17.x86_64.rpm",
+
     "supervisor",
     "supervisord",
     "python-supervisor",
