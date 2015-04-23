@@ -43,27 +43,6 @@
     "#{@ws}/thirdparty/java-1.7.0-openjdk-headless-1.7.0.55-2.4.7.2.el7_0.x86_64.rpm",
     "#{@ws}/thirdparty/log4j-1.2.17-15.el7.noarch.rpm",
 
-    "#{@ws}/thirdparty/boost-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-chrono-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-date-time-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-devel-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-filesystem-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-graph-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-iostreams-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-locale-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-math-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-program-options-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-python-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-random-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-regex-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-serialization-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-signals-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-system-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-test-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-thread-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-timer-1.48.0-11.fc17.x86_64.rpm",
-    "#{@ws}/thirdparty/boost-wave-1.48.0-11.fc17.x86_64.rpm",
-
     "supervisor",
     "supervisord",
     "python-supervisor",
@@ -127,7 +106,8 @@ end
 
 # Install contrail controller software
 def install_contrail_software_controller
-    sh("yum -y install #{@controller_contrail_packages.join(" ")}", true)
+    sh("yum -y update")
+    sh("yum -y install #{@controller_contrail_packages.join(" ")}")
 
     sh("rpm2cpio #{@ws}/contrail/controller/build/package-build/RPMS/noarch/contrail-openstack-database-#{@pkg_tag}.fc21.noarch.rpm | cpio -idmv")
     sh("cp etc/rc.d/init.d/zookeeper /etc/rc.d/init.d/")
