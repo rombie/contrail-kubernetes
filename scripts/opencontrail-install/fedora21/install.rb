@@ -101,7 +101,7 @@ end
 # Install from /cs-shared/builder/cache/centoslinux70/juno
 def install_thirdparty_software_controller
     sh("yum -y remove java-1.8.0-openjdk java-1.8.0-openjdk-headless")
-    sh("yum -y install --skip-broken #{@controller_thirdparty_packages.join(" ")}", true)
+    sh("yum -y install #{@controller_thirdparty_packages.join(" ")}", true)
 end
 
 # Install contrail controller software
