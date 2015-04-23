@@ -100,13 +100,13 @@ end
 
 # Install from /cs-shared/builder/cache/centoslinux70/juno
 def install_thirdparty_software_controller
+    sh("yum -y update")
     sh("yum -y remove java-1.8.0-openjdk java-1.8.0-openjdk-headless")
     sh("yum -y install #{@controller_thirdparty_packages.join(" ")}", true)
 end
 
 # Install contrail controller software
 def install_contrail_software_controller
-    sh("yum -y update")
     sh("yum -y install #{@controller_contrail_packages.join(" ")}")
 
     sh("rpm2cpio #{@ws}/contrail/controller/build/package-build/RPMS/noarch/contrail-openstack-database-#{@pkg_tag}.fc21.noarch.rpm | cpio -idmv")
