@@ -17,6 +17,7 @@
 
 @controller_thirdparty_packages = [
     @common_packages,
+    "#{@ws}/thirdparty/libicu-4.8.1.1-2.fc17.x86_64.rpm",
     "#{@ws}/thirdparty/authbind-2.1.1-0.x86_64.rpm",
     "#{@ws}/thirdparty/librdkafka1-0.8.5-2.0contrail0.el7.centos.x86_64.rpm",
     "#{@ws}/thirdparty/librdkafka-devel-0.8.5-2.0contrail0.el7.centos.x86_64.rpm",
@@ -101,7 +102,6 @@ end
 
 # Install from /cs-shared/builder/cache/centoslinux70/juno
 def install_thirdparty_software_controller
-    sh("yum -y update")
     sh("yum -y remove java-1.8.0-openjdk java-1.8.0-openjdk-headless")
     sh("yum -y install #{@controller_thirdparty_packages.join(" ")}")
 end
