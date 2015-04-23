@@ -103,7 +103,7 @@ end
 def install_thirdparty_software_controller
     sh("yum -y update")
     sh("yum -y remove java-1.8.0-openjdk java-1.8.0-openjdk-headless")
-    sh("yum -y install #{@controller_thirdparty_packages.join(" ")}", true)
+    sh("yum -y install #{@controller_thirdparty_packages.join(" ")}")
 end
 
 # Install contrail controller software
