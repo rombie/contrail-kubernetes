@@ -54,10 +54,10 @@
 ]
 
 @controller_contrail_packages = [
+    "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-lib-#{@pkg_tag}0.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/noarch/contrail-database-#{@pkg_tag}.fc21.noarch.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/python-contrail-#{@pkg_tag}.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/noarch/contrail-config-#{@pkg_tag}.fc21.noarch.rpm",
-    "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-lib-#{@pkg_tag}0.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-control-#{@pkg_tag}.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-analytics-#{@pkg_tag}.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-web-controller-#{@pkg_tag}.x86_64.rpm",
