@@ -17,7 +17,6 @@
 
 @controller_thirdparty_packages = [
     @common_packages,
-    "#{@ws}/thirdparty/libicu-4.8.1.1-2.fc17.x86_64.rpm",
     "#{@ws}/thirdparty/authbind-2.1.1-0.x86_64.rpm",
     "#{@ws}/thirdparty/librdkafka1-0.8.5-2.0contrail0.el7.centos.x86_64.rpm",
     "#{@ws}/thirdparty/librdkafka-devel-0.8.5-2.0contrail0.el7.centos.x86_64.rpm",
@@ -53,10 +52,10 @@
 ]
 
 @controller_contrail_packages = [
-    "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-lib-#{@pkg_tag}.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/noarch/contrail-database-#{@pkg_tag}.fc21.noarch.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/python-contrail-#{@pkg_tag}.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/noarch/contrail-config-#{@pkg_tag}.fc21.noarch.rpm",
+    "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-lib-#{@pkg_tag}.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-control-#{@pkg_tag}.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-analytics-#{@pkg_tag}.fc21.x86_64.rpm",
     "#{@ws}/contrail/controller/build/package-build/RPMS/x86_64/contrail-web-controller-#{@pkg_tag}.x86_64.rpm",
