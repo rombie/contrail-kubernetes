@@ -23,7 +23,8 @@ import (
 	"sync"
 
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/api"
-	kubeclient "github.com/GoogleCloudPlatform/kubernetes/pkg/client"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/client"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/fields"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/client/cache"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/labels"
 
@@ -526,7 +527,7 @@ func (c *Controller) locatePolicyRule(policy *types.NetworkPolicy, lhs, rhs *typ
 	}}
 	rule.SrcPorts = []types.PortType{types.PortType{-1, -1}}
 	rule.DstPorts = []types.PortType{types.PortType{-1, -1}}
-	rule.ActionList = &types.ActionListType{
+	rule.ActionList = types.ActionListType{
 		SimpleAction: "pass",
 	}
 
@@ -551,7 +552,7 @@ func (c *Controller) attachPolicy(network *types.VirtualNetwork, policy *types.N
 	}
 	network.AddNetworkPolicy(policy,
 		types.VirtualNetworkPolicyType{
-			Sequence: &types.SequenceType{10, 0},
+			Sequence: types.SequenceType{10, 0},
 		})
 	err = c.Client.Update(network)
 	if err != nil {
@@ -724,7 +725,7 @@ func (c *Controller) AddService(service *api.Service) {
 	glog.Infof("Add Service %s", service.Name)
 
 	pods, err := c.Kube.Pods(service.Namespace).List(
-		labels.Set(service.Spec.Selector).AsSelector())
+		labels.Set(service.Spec.Selector).AsSelector(), fields.Everything())
 	if err != nil {
 		glog.Errorf("List pods by service %s: %v", service.Name, err)
 		return
