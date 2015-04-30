@@ -6,7 +6,7 @@
 
 @common_packages = [
     "createrepo",
-#   "docker",
+    "docker",
     "git",
     "sshpass",
     "strace",
