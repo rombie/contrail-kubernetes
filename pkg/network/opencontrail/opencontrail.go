@@ -18,7 +18,6 @@ package opencontrail
 
 import (
 	kubeclient "github.com/GoogleCloudPlatform/kubernetes/pkg/client"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/fields"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/client/cache"
 
 	"github.com/Juniper/contrail-go-api"

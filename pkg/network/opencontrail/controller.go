@@ -24,6 +24,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/api"
 	kubeclient "github.com/GoogleCloudPlatform/kubernetes/pkg/client"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/fields"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/labels"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
 
@@ -228,7 +229,7 @@ func (c *Controller) addService(service *api.Service) {
 	glog.Infof("Add Service %s", service.Name)
 
 	pods, err := c.kube.Pods(service.Namespace).List(
-		labels.Set(service.Spec.Selector).AsSelector())
+		labels.Set(service.Spec.Selector).AsSelector(), fields.Everything())
 	if err != nil {
 		glog.Errorf("List pods by service %s: %v", service.Name, err)
 		return
