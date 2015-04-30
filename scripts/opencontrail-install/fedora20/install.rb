@@ -42,6 +42,7 @@
     "#{@ws}/thirdparty/java-1.7.0-openjdk-1.7.0.55-2.4.7.2.el7_0.x86_64.rpm",
     "#{@ws}/thirdparty/java-1.7.0-openjdk-headless-1.7.0.55-2.4.7.2.el7_0.x86_64.rpm",
     "#{@ws}/thirdparty/log4j-1.2.17-15.el7.noarch.rpm",
+    "#{@ws}/thirdparty/python-stevedore-0.15-3.fc21.noarch.rpm",
 
     "supervisor",
     "supervisord",
