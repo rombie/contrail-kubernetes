@@ -8,6 +8,7 @@
     "createrepo",
 #   "docker",
     "git",
+    "logrotate",
     "sshpass",
     "strace",
     "tcpdump",
