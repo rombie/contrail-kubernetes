@@ -14,7 +14,7 @@ sh("\grep aurora /etc/hostname", true)
 
 # Find platform OS
 sh(%{\grep -i "ubuntu 14" /etc/issue 2>&1 > /dev/null}, true)
-@platform = $?.to_i == 0 ? "ubuntu1404" : "fedora21"
+@platform = $?.to_i == 0 ? "ubuntu1404" : "fedora20"
 
 @control_node_introspect_port = @controller_host == "aurora" ? 9083 : "8083"
 
