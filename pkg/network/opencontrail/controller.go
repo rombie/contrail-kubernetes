@@ -150,7 +150,9 @@ func (c *Controller) getPodNetwork(pod *api.Pod) *types.VirtualNetwork {
 	if !ok {
 		name = "default-network"
 	}
-	return c.networkMgr.LocateNetwork(pod.Namespace, name, c.config.PrivateSubnet)
+	fqn := []string{DefaultDomain, pod.Namespace}
+	return c.networkMgr.LocateNetwork(strings.Join(fqn, ":"), name,
+	                                  c.config.PrivateSubnet)
 }
 
 func (c *Controller) serviceNetworkName(labels map[string]string) string {
@@ -164,7 +166,9 @@ func (c *Controller) serviceNetworkName(labels map[string]string) string {
 
 func (c *Controller) locateServiceNetwork(service *api.Service) *types.VirtualNetwork {
 	name := c.serviceNetworkName(service.Labels)
-	network := c.networkMgr.LocateNetwork(service.Namespace, name, c.config.ServiceSubnet)
+	fqn := []string{DefaultDomain, service.Namespace}
+	network := c.networkMgr.LocateNetwork(strings.Join(fqn, ":"), name,
+	                                      c.config.ServiceSubnet)
 	c.networkMgr.LocateFloatingIpPool(network, name, c.config.ServiceSubnet)
 	return network
 }
