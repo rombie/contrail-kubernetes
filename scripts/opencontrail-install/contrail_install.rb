@@ -14,7 +14,7 @@ sh("\grep aurora /etc/hostname", true)
 
 # Find platform OS
 sh(%{\grep -i "ubuntu 14" /etc/issue 2>&1 > /dev/null}, true)
-@platform = $?.to_i == 0 ? "ubuntu1404" : "fedora21"
+@platform = $?.to_i == 0 ? "ubuntu1404" : "fedora20"
 
 @control_node_introspect_port = @controller_host == "aurora" ? 9083 : "8083"
 
@@ -56,11 +56,15 @@ end
 
 def update_controller_etc_hosts
     # Update /etc/hosts with the IP address
-    ip, mask, gw = get_intf_ip(@intf)
-    @controller_ip = ip
+    @controller_ip, mask, gw = get_intf_ip(@intf)
 
-    sh("\grep #{@controller_host} /etc/hosts > /dev/null", true)
-    sh("echo #{ip} #{@controller_host} >> /etc/hosts") if $?.to_i != 0
+    rip = sh("\grep #{@controller_host} /etc/hosts | awk '{print $1}'", true)
+    return if rip != "127.0.0.1" and !rip.empty?
+
+    # If @controller_host resolves to 127.0.0.1, take it out of /etc/hosts
+    sh("sed -i '/127.0.0.1 #{@controller_host}/d' /etc/hosts") \
+        if rip == "127.0.0.1"
+    sh("echo #{@controller_ip} #{@controller_host} >> /etc/hosts")
 end
 
 def verify_controller
@@ -70,6 +74,7 @@ def verify_controller
     sh("netstat -anp | \grep LISTEN | \grep -w 9160") # Cassandra
     sh("netstat -anp | \grep LISTEN | \grep -w #{@control_node_introspect_port}") # Control-Node
     sh("netstat -anp | \grep LISTEN | \grep -w 5998") # discovery
+    sh("netstat -anp | \grep LISTEN | \grep -w 6379") # redis
     sh("netstat -anp | \grep LISTEN | \grep -w 8443") # IFMAP-Server
     sh("netstat -anp | \grep LISTEN | \grep -w 8082") # API-Server
     sh("netstat -anp | \grep LISTEN | \grep -w 8086") # Collector
@@ -100,6 +105,7 @@ def provision_contrail_controller
         sh("service zookeeper restart")
     end
     sh("service rabbitmq-server restart")
+    sh("service redis restart")
     sh("service supervisor-database restart")
     sh("service supervisor-control restart")
     sh("service supervisor-config restart")
