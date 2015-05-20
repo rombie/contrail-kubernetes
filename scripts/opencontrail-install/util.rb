@@ -4,11 +4,15 @@ require 'socket'
 require 'ipaddr'
 require 'pp'
 
-def sh(cmd, ignore_exit_code = false)
+def sh(cmd, ignore_exit_code = false, retry_count = 1)
     puts cmd
-    r = `#{cmd}`.chomp
-    puts r
-    exit -1 if !ignore_exit_code and $?.to_i != 0
+    r = ""
+    retry_count.times { |i|
+        r = `#{cmd}`.chomp
+        puts r
+        break if $?.to_i == 0
+        exit -1 if !ignore_exit_code and i == retry_count - 1
+    }
     return r
 end
 
@@ -48,6 +52,17 @@ def docker_ping()
     cmd = %{echo ping -qc 1 #{ips[0]} | nsenter -n -t #{pids[1]} sh}
     puts cmd
     puts `#{cmd}`
+end
+
+def setup_simple_gateway()
+    `echo 127.0.0.1 localhost >> /etc/hosts`
+    `ip route add 10.0.2.0/29 dev p2p1`
+
+    # Create Public network, floatingip pool and associate 10.0.2.0/24 subnet,
+    # and allocate/reserve first 7 addresses.
+
+    `python /opt/contrail/utils/provision_vgw_interface.py --oper create --interface vgw1 --subnets 10.0.2.0/24 --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public`
+
 end
 
 docker_ping if __FILE__ == $0

@@ -13,6 +13,7 @@
     "strace",
     "tcpdump",
     "telnet",
+    "traceroute",
     "unzip",
 #   "vim",
 ]
@@ -98,8 +99,8 @@
 
 # Download and extract contrail and thirdparty rpms
 def download_contrail_software
-    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/contrail.tar.xz?raw=true | tar Jx")
-    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/thirdparty.tar.xz?raw=true | tar Jx")
+    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/contrail.tar.xz?raw=true | tar Jx", false, 5)
+    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/thirdparty.tar.xz?raw=true | tar Jx", false, 5)
 end
 
 # Install from /cs-shared/builder/cache/centoslinux70/juno
