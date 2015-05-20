@@ -50,7 +50,7 @@ func NewTestController(kube kubeclient.Interface, client contrail.ApiClient, all
 	controller.allocator = allocator
 	controller.instanceMgr = NewInstanceManager(client, controller.allocator)
 	controller.networkMgr = networkMgr
-	controller.serviceMgr = NewServiceManager(client, config)
+	controller.serviceMgr = NewServiceManager(client, config, networkMgr)
 	controller.namespaceMgr = NewNamespaceManager(client)
 	return controller
 }
@@ -98,7 +98,7 @@ func TestPodCreate(t *testing.T) {
 
 	allocator.On("LocateIpAddress", string(pod.ObjectMeta.UID)).Return("10.0.0.42", nil)
 	networkMgr.On("LocateNetwork", "testns", "testnet",
-		controller.config.PrivateSubnet).Return(testnet)
+		controller.config.PrivateSubnet).Return(testnet, nil)
 	networkMgr.On("GetGatewayAddress", testnet).Return("10.0.255.254", nil)
 
 	kube.PodInterface.On("Update", pod).Return(pod, nil)
@@ -144,7 +144,7 @@ func TestPodDelete(t *testing.T) {
 	client.Create(vmi)
 
 	ipObj := new(types.InstanceIp)
-	ipObj.SetFQName("", fqn)
+	ipObj.SetName("testns_test")
 	client.Create(ipObj)
 
 	fip := new(types.FloatingIp)

@@ -17,9 +17,6 @@ limitations under the License.
 package opencontrail
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/golang/glog"
 
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/api"
@@ -48,7 +45,7 @@ type Controller struct {
 
 	instanceMgr  *InstanceManager
 	networkMgr   NetworkManager
-	serviceMgr   *ServiceManager
+	serviceMgr   ServiceManager
 	namespaceMgr *NamespaceManager
 	allocator    AddressAllocator
 }
@@ -71,10 +68,6 @@ type notification struct {
 	event  eventType
 	object runtime.Object
 }
-
-const (
-	ServiceNetworkFmt = "service-%s"
-)
 
 func (c *Controller) Run(shutdown chan struct{}) {
 	for {
@@ -123,7 +116,14 @@ func (c *Controller) updateInstanceMetadata(
 	if updateElement(pod.Annotations, "nic_uuid", nic.GetUuid()) {
 		doUpdate = true
 	}
-	if updateElement(pod.Annotations, "mac_address", nic.GetVirtualMachineInterfaceMacAddresses().MacAddress[0]) {
+	var mac_address string
+	addressArr := nic.GetVirtualMachineInterfaceMacAddresses()
+	if len(addressArr.MacAddress) > 0 {
+		mac_address = addressArr.MacAddress[0]
+	} else {
+		glog.Errorf("interface %s: no mac-addresses", nic.GetName())
+	}
+	if updateElement(pod.Annotations, "mac_address", mac_address) {
 		doUpdate = true
 	}
 	if updateElement(pod.Annotations, "ip_address", address) {
@@ -150,27 +150,20 @@ func (c *Controller) getPodNetwork(pod *api.Pod) *types.VirtualNetwork {
 	if !ok {
 		name = "default-network"
 	}
-	fqn := []string{DefaultDomain, pod.Namespace}
-	return c.networkMgr.LocateNetwork(strings.Join(fqn, ":"), name,
-	                                  c.config.PrivateSubnet)
+	network, err := c.networkMgr.LocateNetwork(pod.Namespace, name, c.config.PrivateSubnet)
+	if err != nil {
+		return nil
+	}
+	return network
 }
 
-func (c *Controller) serviceNetworkName(labels map[string]string) string {
+func (c *Controller) serviceName(labels map[string]string) string {
 	name, ok := labels[c.config.NetworkTag]
 	if !ok {
-		return "services"
+		return "default"
 	}
 
-	return fmt.Sprintf(ServiceNetworkFmt, name)
-}
-
-func (c *Controller) locateServiceNetwork(service *api.Service) *types.VirtualNetwork {
-	name := c.serviceNetworkName(service.Labels)
-	fqn := []string{DefaultDomain, service.Namespace}
-	network := c.networkMgr.LocateNetwork(strings.Join(fqn, ":"), name,
-	                                      c.config.ServiceSubnet)
-	c.networkMgr.LocateFloatingIpPool(network, name, c.config.ServiceSubnet)
-	return network
+	return name
 }
 
 func (c *Controller) ensureNamespace(namespaceName string) {
@@ -212,14 +205,7 @@ func (c *Controller) updatePod(pod *api.Pod) {
 
 	policyTag, ok := pod.Labels[c.config.NetworkAccessTag]
 	if ok {
-		var policyName string
-		if pod.GenerateName == "" {
-			policyName = pod.Name
-		} else {
-			policyName = strings.TrimRight(pod.GenerateName, "-")
-		}
-		serviceName := fmt.Sprintf(ServiceNetworkFmt, policyTag)
-		c.serviceMgr.NetworkAccess(network, policyName, serviceName)
+		c.serviceMgr.Connect(pod.Namespace, policyTag, network)
 	}
 }
 
@@ -239,6 +225,11 @@ func (c *Controller) deletePod(pod *api.Pod) {
 // to the backends.
 func (c *Controller) addService(service *api.Service) {
 	glog.Infof("Add Service %s", service.Name)
+	serviceName := c.serviceName(service.Labels)
+	err := c.serviceMgr.Create(service.Namespace, serviceName)
+	if err != nil {
+		return
+	}
 
 	pods, err := c.kube.Pods(service.Namespace).List(
 		labels.Set(service.Spec.Selector).AsSelector(), fields.Everything())
@@ -252,21 +243,20 @@ func (c *Controller) addService(service *api.Service) {
 	}
 
 	var serviceIp *types.FloatingIp = nil
-	var serviceNetwork *types.VirtualNetwork = nil
 	// Allocate this IP address on the service network.
 	if service.Spec.PortalIP != "" {
-		serviceNetwork = c.locateServiceNetwork(service)
-		if serviceNetwork != nil {
-			serviceIp = c.networkMgr.LocateFloatingIp(
-				serviceNetwork.GetName(), service.Name, service.Spec.PortalIP)
+		serviceNetwork, err := c.serviceMgr.LocateServiceNetwork(service.Namespace, serviceName)
+		if err == nil {
+			serviceIp, err = c.networkMgr.LocateFloatingIp(
+				serviceNetwork, service.Name, service.Spec.PortalIP)
 		}
 	}
 
 	var publicIp *types.FloatingIp = nil
 	if service.Spec.PublicIPs != nil {
 		// Allocate a floating-ip from the public pool.
-		publicIp = c.networkMgr.LocateFloatingIp(
-			c.config.PublicNetwork, service.Name, service.Spec.PublicIPs[0])
+		publicIp, err = c.networkMgr.LocateFloatingIp(
+			c.networkMgr.GetPublicNetwork(), service.Name, service.Spec.PublicIPs[0])
 	}
 
 	if serviceIp == nil && publicIp == nil {
@@ -296,14 +286,7 @@ func (c *Controller) addService(service *api.Service) {
 }
 
 func (c *Controller) deleteService(service *api.Service) {
-	networkName := c.serviceNetworkName(service.Labels)
-	network := c.networkMgr.LookupNetwork(service.Namespace, networkName)
-	if network == nil {
-		return
-	}
-
-	c.networkMgr.DeleteFloatingIpPool(network, networkName, true)
-	c.networkMgr.DeleteNetwork(network)
+	c.serviceMgr.Delete(service.Namespace, c.serviceName(service.Labels))
 }
 
 func (c *Controller) addNamespace(namespace *api.Namespace) {
