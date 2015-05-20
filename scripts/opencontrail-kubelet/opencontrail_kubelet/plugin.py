@@ -102,8 +102,7 @@ def getPodInfo(docker_id):
 
     kubeapi = kubelet_get_api()
 
-    data = Shell.run('sshpass -p vagrant ssh vagrant@kubernetes-master '
-                     'kubectl get -o json pod %s' % (podName))
+    data = Shell.run('sshpass -p vagrant ssh vagrant@kubernetes-master kubectl get -o json pod %s' % (podName))
     return uid, json.loads(data)
     
 def setup(pod_namespace, pod_name, docker_id):
