@@ -45,8 +45,9 @@ func NewConfig() *Config {
 		ApiPort:          8082,
 		DefaultProject:   "default-domain:default-project",
 		PublicNetwork:    "default-domain:default-project:Public",
-		PrivateSubnet:    "10.0.0.0/16",
-		ServiceSubnet:    "10.254.0.0/16",
+		PrivateSubnet:    "10.10.10.0/24",
+		ServiceSubnet:    "10.10.20.0/24",
+		PublicSubnet:     "10.0.2.0/24",
 		NetworkTag:       "name",
 		NetworkAccessTag: "uses",
 	}
