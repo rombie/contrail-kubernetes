@@ -52,6 +52,7 @@ def docker_ping()
     cmd = %{echo ping -qc 1 #{ips[0]} | nsenter -n -t #{pids[1]} sh}
     puts cmd
     puts `#{cmd}`
+    # docker ps |\grep -v CO | awk '{print $1}' | xargs -n 1 docker kill
 end
 
 def setup_simple_gateway()

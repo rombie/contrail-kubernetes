@@ -100,8 +100,7 @@ def getPodInfo(docker_id):
     podName = fields[2]
     uid = fields[4]
 
-    kubeapi = kubelet_get_api()
-
+    # kubeapi = kubelet_get_api()
     data = Shell.run('sshpass -p vagrant ssh vagrant@kubernetes-master kubectl get -o json pod %s' % (podName))
     return uid, json.loads(data)
     
@@ -201,4 +200,8 @@ def main():
         teardown(args.pod_namespace, args.pod_name, args.docker_id)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except:
+        logging.error("Unexpected error: %s", sys.exc_info()[0])
+        raise
