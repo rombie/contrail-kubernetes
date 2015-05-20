@@ -127,7 +127,7 @@ def setup(pod_namespace, pod_name, docker_id):
     # TODO: Remove the need for a vmi lookup.
     # The lxc_manager uses the mac_address to setup the container interface.
     # Additionally the ip-address, prefixlen and gateway are also used.
-    if not 'annotations' in podInfo:
+    if not 'annotations' in podInfo["metadata"]:
         logging.error('No annotations in pod %s', podInfo["metadata"]["name"])
         sys.exit(1)
 
