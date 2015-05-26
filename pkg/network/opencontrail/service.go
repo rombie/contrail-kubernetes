@@ -129,6 +129,11 @@ func (m *ServiceManagerImpl) detachPolicy(network *types.VirtualNetwork, policyN
 	return nil
 }
 
+// OS_TENANT_NAME=default-project ./cli network-create -subnet=10.247.0.0/16 Public
+// OS_TENANT_NAME=default-project ./cli network-delete Public
+// sshpass -p c0ntrail123 scp root@a6s43:{kube-network-manager, cli} .
+// curl -s localhost:8082/virtual-networks | python -m json.tool | less
+
 func (m *ServiceManagerImpl) LocateServiceNetwork(tenant, serviceName string) (*types.VirtualNetwork, error) {
 	networkName := fmt.Sprintf(ServiceNetworkFmt, serviceName)
 	network, err := m.networkMgr.LocateNetwork(tenant, networkName, m.config.ServiceSubnet)
