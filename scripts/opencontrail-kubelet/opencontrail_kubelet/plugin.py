@@ -131,8 +131,8 @@ def setup(pod_namespace, pod_name, docker_id):
         logging.error('No annotations in pod %s', podInfo["metadata"]["name"])
         sys.exit(1)
 
-    nic_uuid = podInfo["annotations"]["nic_uuid"]
-    mac_address = podInfo["annotations"]["mac_address"]
+    nic_uuid = podInfo["metadata"]["annotations"]["nic_uuid"]
+    mac_address = podInfo["metadata"]["annotations"]["mac_address"]
     if client._net_mode == 'none':
         ifname = manager.create_interface(short_id, instance_ifname,
                                           mac_address)
@@ -146,8 +146,8 @@ def setup(pod_namespace, pod_name, docker_id):
                  display_name=podInfo['id'],
                  hostname=podInfo['id']+'.'+pod_namespace)
 
-    ip_address = podInfo["annotations"]["ip_address"]
-    gateway = podInfo["annotations"]["gateway"]
+    ip_address = podInfo["metadata"]["annotations"]["ip_address"]
+    gateway = podInfo["metadata"]["annotations"]["gateway"]
     Shell.run('ip netns exec %s ip addr add %s/32 peer %s dev %s' % \
               (short_id, ip_address, gateway, instance_ifname))
     Shell.run('ip netns exec %s ip route add default via %s' % \
@@ -161,8 +161,8 @@ def teardown(pod_namespace, pod_name, docker_id):
     short_id = docker_id[0:11]
 
     uid, podInfo = getPodInfo(docker_id)
-    if 'annotations' in podInfo and 'vmi' in podInfo["annotations"]:
-        vmi_uuid = podInfo["annotations"]["vmi"]
+    if 'annotations' in podInfo["metadata"] and 'vmi' in podInfo["metadata"]["annotations"]:
+        vmi_uuid = podInfo["metadata"]["annotations"]["vmi"]
         api = ContrailVRouterApi()
         api.delete_port(vmi_uuid)
 
