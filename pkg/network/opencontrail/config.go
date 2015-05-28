@@ -30,7 +30,6 @@ type Config struct {
 
 	DefaultProject string
 	PublicNetwork  string
-	ServiceNetwork  string
 
 	PublicSubnet  string
 	PrivateSubnet string
@@ -46,7 +45,6 @@ func NewConfig() *Config {
 		ApiPort:          8082,
 		DefaultProject:   "default-domain:default-project",
 		PublicNetwork:    "default-domain:default-project:Public",
-		ServiceNetwork:   "default-domain:default-project:Service",
 		PrivateSubnet:    "10.10.10.0/24",
 		ServiceSubnet:    "10.247.0.0/16",
 		PublicSubnet:     "10.250.0.0/24",

@@ -83,17 +83,6 @@ func (m *NetworkManager) GetPublicNetwork() *types.VirtualNetwork {
 
 	return r0
 }
-}
-func (m *NetworkManager) GetServiceNetwork() *types.VirtualNetwork {
-	ret := m.Called()
-
-	var r0 *types.VirtualNetwork
-	if ret.Get(0) != nil {
-		r0 = ret.Get(0).(*types.VirtualNetwork)
-	}
-
-	return r0
-}
 func (m *NetworkManager) GetGatewayAddress(network *types.VirtualNetwork) (string, error) {
 	ret := m.Called(network)
 
