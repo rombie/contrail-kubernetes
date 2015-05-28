@@ -268,6 +268,7 @@ func (m *NetworkManagerImpl) ReleaseNetworkIfEmpty(namespace, name string) error
 }
 
 func (m *NetworkManagerImpl) LocateFloatingIp(network *types.VirtualNetwork, resourceName, address string) (*types.FloatingIp, error) {
+	glog.Infof("LocateFloatingIp: %s in resource: %s", address, resourceName)
 	obj, err := m.client.FindByName("floating-ip-pool", makePoolName(network))
 	if err != nil {
 		glog.Errorf("Get floating-ip-pool %s: %v", network.GetName(), err)
