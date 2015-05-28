@@ -76,6 +76,7 @@ func (m *NetworkManagerImpl) LocateFloatingIpPool(
 	obj, err := m.client.FindByName(
 		"floating-ip-pool", makePoolName(network))
 	if err == nil {
+		glog.Errorf("m.client.FindByName failed %s: %v", network.GetName(), err)
 		return obj.(*types.FloatingIpPool), nil
 	}
 
