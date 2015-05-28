@@ -245,7 +245,7 @@ func (c *Controller) addService(service *api.Service) {
 	var serviceIp *types.FloatingIp = nil
 	// Allocate this IP address on the service network.
 	if service.Spec.PortalIP != "" {
-		// serviceNetwork, err := c.serviceMgr.LocateServiceNetwork(service.Namespace, serviceName)
+		c.serviceMgr.LocateServiceNetwork(service.Namespace, serviceName)
 		serviceIp, err = c.networkMgr.LocateFloatingIp(
 			c.networkMgr.GetServiceNetwork(), service.Name, service.Spec.PortalIP)
 	}
