@@ -56,7 +56,7 @@ func NewNetworkManager(client contrail.ApiClient, config *Config) NetworkManager
 	return manager
 }
 
-func (m *NetworkManagerImpl) GetServicecNetwork() *types.VirtualNetwork {
+func (m *NetworkManagerImpl) GetServiceNetwork() *types.VirtualNetwork {
 	return m.serviceNetwork
 }
 
