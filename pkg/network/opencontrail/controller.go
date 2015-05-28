@@ -252,10 +252,10 @@ func (c *Controller) addService(service *api.Service) {
 	}
 
 	var publicIp *types.FloatingIp = nil
-	if service.Spec.PublicIPs != nil {
+	if service.Spec.DeprecatedPublicIPs != nil {
 		// Allocate a floating-ip from the public pool.
 		publicIp, err = c.networkMgr.LocateFloatingIp(
-			c.networkMgr.GetPublicNetwork(), service.Name, service.Spec.PublicIPs[0])
+			c.networkMgr.GetPublicNetwork(), service.Name, service.Spec.DeprecatedPublicIPs[0])
 	}
 
 	if serviceIp == nil && publicIp == nil {
