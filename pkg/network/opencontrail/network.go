@@ -36,6 +36,7 @@ type NetworkManager interface {
 	ReleaseNetworkIfEmpty(namespace, name string) error
 	LocateFloatingIp(network *types.VirtualNetwork, resourceName, address string) (*types.FloatingIp, error)
 	GetPublicNetwork() *types.VirtualNetwork
+	GetServiceNetwork() *types.VirtualNetwork
 	GetGatewayAddress(network *types.VirtualNetwork) (string, error)
 }
 
@@ -43,6 +44,7 @@ type NetworkManagerImpl struct {
 	client        contrail.ApiClient
 	config        *Config
 	publicNetwork *types.VirtualNetwork
+	serviceNetwork *types.VirtualNetwork
 }
 
 func NewNetworkManager(client contrail.ApiClient, config *Config) NetworkManager {
@@ -50,7 +52,12 @@ func NewNetworkManager(client contrail.ApiClient, config *Config) NetworkManager
 	manager.client = client
 	manager.config = config
 	manager.initializePublicNetwork()
+	manager.initializeServiceNetwork()
 	return manager
+}
+
+func (m *NetworkManagerImpl) GetServicecNetwork() *types.VirtualNetwork {
+	return m.serviceNetwork
 }
 
 func (m *NetworkManagerImpl) GetPublicNetwork() *types.VirtualNetwork {
@@ -114,6 +121,47 @@ func (m *NetworkManagerImpl) DeleteFloatingIpPool(network *types.VirtualNetwork,
 	}
 	m.client.Delete(obj)
 	return nil
+}
+
+func (m *NetworkManagerImpl) initializeServiceNetwork() {
+	var network *types.VirtualNetwork
+	obj, err := m.client.FindByName("virtual-network", m.config.ServiceNetwork)
+	if err != nil {
+		fqn := strings.Split(m.config.ServiceNetwork, ":")
+		parent := strings.Join(fqn[0:len(fqn)-1], ":")
+		projectId, err := m.client.UuidByName("project", parent)
+		if err != nil {
+			glog.Fatalf("%s: %v", parent, err)
+		}
+		var networkId string
+		networkName := fqn[len(fqn)-1]
+		if len(m.config.ServiceSubnet) > 0 {
+			networkId, err = config.CreateNetworkWithSubnet(
+				m.client, projectId, networkName, m.config.ServiceSubnet)
+		} else {
+			networkId, err = config.CreateNetwork(m.client, projectId, networkName)
+		}
+		if err != nil {
+			glog.Fatalf("%s: %v", parent, err)
+		}
+
+		glog.Infof("Created network %s", m.config.ServiceNetwork)
+
+		obj, err := m.client.FindByUuid("virtual-network", networkId)
+		if err != nil {
+			glog.Fatalf("GET %s %v", networkId, err)
+		}
+		network = obj.(*types.VirtualNetwork)
+	} else {
+		network = obj.(*types.VirtualNetwork)
+	}
+
+	m.publicNetwork = network
+
+	// TODO(prm): Ensure that the subnet is as specified.
+	if len(m.config.ServiceSubnet) > 0 {
+		m.LocateFloatingIpPool(network, m.config.ServiceSubnet)
+	}
 }
 
 func (m *NetworkManagerImpl) initializePublicNetwork() {
