@@ -248,7 +248,6 @@ func (c *Controller) addService(service *api.Service) {
 		// serviceNetwork, err := c.serviceMgr.LocateServiceNetwork(service.Namespace, serviceName)
 		serviceIp, err = c.networkMgr.LocateFloatingIp(
 			c.networkMgr.GetServiceNetwork(), service.Name, service.Spec.PortalIP)
-		}
 	}
 
 	var publicIp *types.FloatingIp = nil
