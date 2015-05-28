@@ -49,7 +49,7 @@ func NewConfig() *Config {
 		ServiceNetwork:   "default-domain:default-project:Service",
 		PrivateSubnet:    "10.10.10.0/24",
 		ServiceSubnet:    "10.247.0.0/16",
-		PublicSubnet:     "10.0.2.0/24",
+		PublicSubnet:     "10.250.0.0/24",
 		NetworkTag:       "name",
 		NetworkAccessTag: "uses",
 	}
