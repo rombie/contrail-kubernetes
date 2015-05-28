@@ -168,6 +168,7 @@ func (m *NetworkManagerImpl) initializeServiceNetwork() {
 func (m *NetworkManagerImpl) initializePublicNetwork() {
 	var network *types.VirtualNetwork
 	obj, err := m.client.FindByName("virtual-network", m.config.PublicNetwork)
+	m.config.PublicSubnet = "10.250.0.0/24"
 	if err != nil {
 		fqn := strings.Split(m.config.PublicNetwork, ":")
 		parent := strings.Join(fqn[0:len(fqn)-1], ":")
