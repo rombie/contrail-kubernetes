@@ -156,7 +156,7 @@ func (m *NetworkManagerImpl) initializeServiceNetwork() {
 		network = obj.(*types.VirtualNetwork)
 	}
 
-	m.publicNetwork = network
+	m.serviceNetwork = network
 
 	// TODO(prm): Ensure that the subnet is as specified.
 	if len(m.config.ServiceSubnet) > 0 {
