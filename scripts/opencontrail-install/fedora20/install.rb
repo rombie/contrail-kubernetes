@@ -153,7 +153,7 @@ end
 # Install third-party software
 def install_thirdparty_software_compute
     sh("yum -y install #{@compute_thirdparty_packages.join(" ")}")
-    sh("service docker restart")
+    sh("service docker restart", true)
 #   sh("docker pull ubuntu")
 end
 
