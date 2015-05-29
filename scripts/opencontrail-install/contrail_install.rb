@@ -161,7 +161,7 @@ def provision_contrail_controller_kubernetes
     return if @controller_host !~ /kubernetes/
 
     # Start kube web server in background
-    sh("nohup /vagrant/cluster/kubectl.sh proxy --www=/vagrant/www 2>&1 > /var/log/kubectl_web_proxy.log", false, 1, true)
+    sh("nohup /vagrant/cluster/kubectl.sh proxy --www=/vagrant/www 2>&1 > /var/log/kubectl-web-proxy.log", false, 1, true)
 
     # Start kube-network-manager plugin daemon in background
     sh("nohup /vagrant/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, true)
