@@ -55,6 +55,10 @@ def initial_setup
 end
 
 def update_controller_etc_hosts
+    # Make sure that localhost resolves to 127.0.0.1
+    sh(%{\grep -q "127\.0\.0\.1.*localhost" /etc/hosts}, true)
+    sh("echo 127.0.0.1 localhost >> /etc/hosts") if $?.to_i != 0
+
     # Update /etc/hosts with the IP address
     @controller_ip, mask, gw = get_intf_ip(@intf)
 
@@ -153,7 +157,18 @@ def provision_contrail_compute
     verify_compute
 end
 
+def provision_contrail_controller_kubernetes
+    return if @controller_host !~ /kubernetes/
+
+    # Start kube web server in background
+    sh("nohup /vagrant/cluster/kubectl.sh proxy --www=/vagrant/www 2>&1 > /var/log/kubectl_web_proxy.log", false, 1, true)
+
+    # Start kube-network-manager plugin daemon in background
+    sh("nohup /vagrant/kube_network_manager 2>&1 > /var/log/contrail/kube_network_manager.log", false, 1, true)
+end
+
 def provision_contrail_compute_kubernetes
+    return if @controller_host !~ /kubernetes/
     Dir.chdir("#{@ws}/../opencontrail-kubelet")
     sh("python setup.py install")
     plugin = "opencontrail"
@@ -182,12 +197,13 @@ def main
         install_thirdparty_software_controller
         install_contrail_software_controller
         provision_contrail_controller
+        provision_contrail_controller_kubernetes
     end
     if ARGV[0] == "compute" or ARGV[0] == "all" then
         install_thirdparty_software_compute
         install_contrail_software_compute
         provision_contrail_compute
-        provision_contrail_compute_kubernetes if @controller_host =~ /kubernetes/
+        provision_contrail_compute_kubernetes
     end
 end
 

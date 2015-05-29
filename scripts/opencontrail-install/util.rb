@@ -4,8 +4,14 @@ require 'socket'
 require 'ipaddr'
 require 'pp'
 
-def sh(cmd, ignore_exit_code = false, retry_count = 1)
+def sh(cmd, ignore_exit_code = false, retry_count = 1, bg = false)
     puts cmd
+    if bg then
+        # Run command in background
+        Process.detach(spawn(cmd))
+        return
+    end
+
     r = ""
     retry_count.times { |i|
         r = `#{cmd}`.chomp
