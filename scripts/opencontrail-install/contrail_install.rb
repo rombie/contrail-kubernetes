@@ -164,7 +164,7 @@ def provision_contrail_controller_kubernetes
     sh("nohup /vagrant/cluster/kubectl.sh proxy --www=/vagrant/www 2>&1 > /var/log/kubectl_web_proxy.log", false, 1, true)
 
     # Start kube-network-manager plugin daemon in background
-    sh("nohup /vagrant/kube_network_manager 2>&1 > /var/log/contrail/kube_network_manager.log", false, 1, true)
+    sh("nohup /vagrant/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, true)
 end
 
 def provision_contrail_compute_kubernetes
