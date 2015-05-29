@@ -62,14 +62,10 @@ def docker_ping()
 end
 
 def setup_simple_gateway()
-    `echo 127.0.0.1 localhost >> /etc/hosts`
-    `ip route add 10.0.2.0/29 dev p2p1`
+    sh("python /opt/contrail/utils/provision_vgw_interface.py --oper create --interface vgw_public --subnets 10.1.0.0/16 --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
 
-    # Create Public network, floatingip pool and associate 10.0.2.0/24 subnet,
-    # and allocate/reserve first 7 addresses.
-
-    `python /opt/contrail/utils/provision_vgw_interface.py --oper create --interface vgw1 --subnets 10.0.2.0/24 --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public`
-
+    minion_vgw = ""
+    sh("ip route add 10.1.0.0/16 gw #{minion_vgw}")
 end
 
 docker_ping if __FILE__ == $0
