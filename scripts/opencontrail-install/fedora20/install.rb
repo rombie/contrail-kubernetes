@@ -142,7 +142,6 @@ NM_CONTROLLED=no
 #NETWORK MANAGER BUG WORKAROUND
 SUBCHANNELS=1,2,3
 GATEWAY=#{gw}
-DNS1=8.8.8.8
 #DOMAIN="contrail.juniper.net. juniper.net. jnpr.net. contrail.juniper.net"
 EOF
     File.open("/etc/sysconfig/network-scripts/ifcfg-vhost0", "w") { |fp|
