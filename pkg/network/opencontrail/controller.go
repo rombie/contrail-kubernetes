@@ -244,11 +244,11 @@ func (c *Controller) addService(service *api.Service) {
 
 	var serviceIp *types.FloatingIp = nil
 	// Allocate this IP address on the service network.
-	if service.Spec.PortalIP != "" {
+	if service.Spec.ClusterIP != "" {
 		serviceNetwork, err := c.serviceMgr.LocateServiceNetwork(service.Namespace, serviceName)
 		if err == nil {
 			serviceIp, err = c.networkMgr.LocateFloatingIp(
-				serviceNetwork, service.Name, service.Spec.PortalIP)
+				serviceNetwork, service.Name, service.Spec.ClusterIP)
 		}
 	}
 
