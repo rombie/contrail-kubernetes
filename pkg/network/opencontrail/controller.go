@@ -182,7 +182,7 @@ func (c *Controller) ensureNamespace(namespaceName string) {
 }
 
 func (c *Controller) updatePodServiceIp(service *api.Service, pod *api.Pod) {
-	if service.Spec.PortalIP == "" {
+	if service.Spec.ClusterIP == "" {
 		return
 	}
 
@@ -190,7 +190,7 @@ func (c *Controller) updatePodServiceIp(service *api.Service, pod *api.Pod) {
 	if err != nil {
 		return
 	}
-	serviceIp, err := c.networkMgr.LocateFloatingIp(serviceNetwork, service.Name, service.Spec.PortalIP)
+	serviceIp, err := c.networkMgr.LocateFloatingIp(serviceNetwork, service.Name, service.Spec.ClusterIP)
 	if err != nil {
 		return
 	}
