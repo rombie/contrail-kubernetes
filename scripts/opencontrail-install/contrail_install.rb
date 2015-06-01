@@ -189,7 +189,7 @@ EOF
     }
 
     sh(%{sed -i 's/DAEMON_ARGS=" /DAEMON_ARGS=" --network_plugin=#{plugin} /' /etc/sysconfig/kubelet})
-    sh("systemctl restart kubelet")
+    sh("systemctl restart kubelet", true)
 end
 
 def main
