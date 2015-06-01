@@ -51,14 +51,15 @@ def initial_setup
         sh(%{grep #{@controller_host} /etc/hosts | awk '{print $1}'})
     error "Cannot resolve contrail-controller host" \
         if @contrail_controller.empty?
-    Dir.chdir("#{@ws}")
-end
 
-def update_controller_etc_hosts
     # Make sure that localhost resolves to 127.0.0.1
     sh(%{\grep -q "127\.0\.0\.1.*localhost" /etc/hosts}, true)
     sh("echo 127.0.0.1 localhost >> /etc/hosts") if $?.to_i != 0
 
+    Dir.chdir("#{@ws}")
+end
+
+def update_controller_etc_hosts
     # Update /etc/hosts with the IP address
     @controller_ip, mask, gw = get_intf_ip(@intf)
 
