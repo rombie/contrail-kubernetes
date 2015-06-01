@@ -102,7 +102,9 @@ func (m *NetworkManager) start(args []string) {
 					oldObj.(*api.Pod), newObj.(*api.Pod))
 			},
 			DeleteFunc: func(obj interface{}) {
-				m.Controller.DeletePod(obj.(*api.Pod))
+				if pod, ok := obj.(*api.Pod); ok {
+					m.Controller.DeletePod(pod)
+				}
 			},
 		},
 	)
@@ -127,8 +129,9 @@ func (m *NetworkManager) start(args []string) {
 					newObj.(*api.Namespace))
 			},
 			DeleteFunc: func(obj interface{}) {
-				m.Controller.DeleteNamespace(
-					obj.(*api.Namespace))
+				if namespace, ok := obj.(*api.Namespace); ok {
+					m.Controller.DeleteNamespace(namespace)
+				}
 			},
 		},
 	)
@@ -153,8 +156,9 @@ func (m *NetworkManager) start(args []string) {
 					newObj.(*api.ReplicationController))
 			},
 			DeleteFunc: func(obj interface{}) {
-				m.Controller.DeleteReplicationController(
-					obj.(*api.ReplicationController))
+				if rc, ok := obj.(*api.ReplicationController); ok {
+					m.Controller.DeleteReplicationController(rc)
+				}
 			},
 		},
 	)
@@ -179,16 +183,17 @@ func (m *NetworkManager) start(args []string) {
 					newObj.(*api.Service))
 			},
 			DeleteFunc: func(obj interface{}) {
-				m.Controller.DeleteService(
-					obj.(*api.Service))
+				if service, ok := obj.(*api.Service); ok {
+					m.Controller.DeleteService(service)
+				}
 			},
 		},
 	)
 
-	m.Controller.SetPodStore(&m.PodStore)
-	m.Controller.SetNamespaceStore(&m.NamespaceStore)
-	m.Controller.SetReplicationControllerStore(&m.RCStore)
-	m.Controller.SetServiceStore(&m.ServiceStore)
+	m.Controller.SetPodStore(m.PodStore)
+	m.Controller.SetNamespaceStore(m.NamespaceStore)
+	m.Controller.SetReplicationControllerStore(m.RCStore)
+	m.Controller.SetServiceStore(m.ServiceStore)
 }
 
 func (m *NetworkManager) Run(args []string) error {
