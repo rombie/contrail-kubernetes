@@ -119,7 +119,6 @@ func (m *NetworkManagerImpl) DeleteFloatingIpPool(network *types.VirtualNetwork,
 func (m *NetworkManagerImpl) initializePublicNetwork() {
 	var network *types.VirtualNetwork
 	obj, err := m.client.FindByName("virtual-network", m.config.PublicNetwork)
-	m.config.PublicSubnet = "10.1.0.0/16"
 	if err != nil {
 		fqn := strings.Split(m.config.PublicNetwork, ":")
 		parent := strings.Join(fqn[0:len(fqn)-1], ":")

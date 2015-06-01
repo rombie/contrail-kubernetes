@@ -40,31 +40,3 @@ def sh_container(container_id, cmd, ignore = false)
     pid = sh(%{docker inspect -f {{.State.Pid}} #{container_id}})
     sh(%{echo #{cmd} | nsenter -n -t #{pid} sh})
 end
-
-# Ping between two docker containers
-def docker_ping()
-    ips = [ ]
-    pids = [ ]
-    `docker ps |\grep pause |\grep front | awk '{print $1}'`.chomp.split.each { |docker|
-        pid=`docker inspect -f {{.State.Pid}} #{docker}`.chomp
-        cmd = %{echo ip address show dev eth0 | nsenter -n -t #{pid} sh | \grep -w inet | awk '{print $2}' | cut -d '/' -f 1}
-        pids.push pid
-        ips.push `#{cmd}`.chomp
-    }
-
-    cmd = %{echo ping -qc 1 #{ips[1]} | nsenter -n -t #{pids[0]} sh}
-    puts cmd
-    puts `#{cmd}`
-    cmd = %{echo ping -qc 1 #{ips[0]} | nsenter -n -t #{pids[1]} sh}
-    puts cmd
-    puts `#{cmd}`
-    # docker ps |\grep -v CO | awk '{print $1}' | xargs -n 1 docker kill
-end
-
-def post_install()
-    sh("nohup /vagrant/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, true)
-    sh("python /opt/contrail/utils/provision_vgw_interface.py --oper create --interface vgw_public --subnets 10.1.0.0/16 --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
-    sh("ip route add 10.1.0.0/16 gw #{minion1_vgw}")
-end
-
-docker_ping if __FILE__ == $0

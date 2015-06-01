@@ -151,7 +151,7 @@ def provision_contrail_compute
     sh("ip addr flush dev #{@intf}")
 
     # Restore DNS resolver
-    @resolvers.reverse.each { |r|
+    @resolvers.each { |r|
         sh(%{sh -c "echo #{r} >> /etc/resolv.conf"})
     }
     verify_compute

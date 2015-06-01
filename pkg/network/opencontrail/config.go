@@ -47,7 +47,6 @@ func NewConfig() *Config {
 		PublicNetwork:    "default-domain:default-project:Public",
 		PrivateSubnet:    "10.10.0.0/16",
 		ServiceSubnet:    "10.247.0.0/16",
-		PublicSubnet:     "10.1.0.0/16",
 		NetworkTag:       "name",
 		NetworkAccessTag: "uses",
 	}
