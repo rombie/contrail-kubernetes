@@ -108,9 +108,11 @@ def provision_contrail_controller
     if @platform =~ /fedora/
         sh("service cassandra restart")
         sh("service zookeeper restart")
+        sh("service redis restart")
+    else
+        sh("service redis-server restart")
     end
     sh("service rabbitmq-server restart")
-    sh("service redis restart")
     sh("service supervisor-database restart")
     sh("service supervisor-control restart")
     sh("service supervisor-config restart")
