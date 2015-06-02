@@ -79,7 +79,7 @@ def verify_controller
     sh("netstat -anp | \grep LISTEN | \grep -w 9160") # Cassandra
     sh("netstat -anp | \grep LISTEN | \grep -w #{@control_node_introspect_port}") # Control-Node
     sh("netstat -anp | \grep LISTEN | \grep -w 5998") # discovery
-    sh("netstat -anp | \grep LISTEN | \grep -w 6379") # redis
+    sh("netstat -anp | \grep LISTEN | \grep -w 6379") # redis-server
     sh("netstat -anp | \grep LISTEN | \grep -w 8443") # IFMAP-Server
     sh("netstat -anp | \grep LISTEN | \grep -w 8082") # API-Server
     sh("netstat -anp | \grep LISTEN | \grep -w 8086") # Collector

@@ -92,6 +92,7 @@ end
 
 # Install from /cs-shared/builder/cache/centoslinux70/icehouse
 def install_thirdparty_software_controller
+    sh("apt-get -y install openjdk-7-jre rabbitmq-server")
     sh("apt-get -y install #{@common_packages.join(" ")} rabbitmq-server")
     @controller_thirdparty_packages.each { |pkg| sh("gdebi -n #{pkg}") }
 end
@@ -104,6 +105,7 @@ def install_contrail_software_controller
     sh("gdebi -n #{@ws}/build/debian/contrail-openstack-database_#{@pkg_tag}_all.deb")
 
     # Fix ubuntu specific issues
+    sh("apt-get -y remove openjdk-6-jre", true)
     sh("apt-get -y autoremove")
     sh("ln -sf /etc/cassandra /etc/cassandra/conf")
 
