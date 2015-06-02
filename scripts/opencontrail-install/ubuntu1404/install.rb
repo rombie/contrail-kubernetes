@@ -102,7 +102,7 @@ def install_contrail_software_controller
     @controller_contrail_packages.each { |pkg| sh("gdebi -n #{pkg}") }
 
     sh("rm -rf /etc/init/zookeeper.conf")
-    sh("gdebi -n #{@ws}/build/debian/contrail-openstack-database_#{@pkg_tag}_all.deb")
+    sh("dpkg -i --force-overwrite #{@ws}/build/debian/contrail-openstack-database_#{@pkg_tag}_all.deb")
 
     # Fix ubuntu specific issues
     sh("apt-get -y remove openjdk-6-jre", true)
