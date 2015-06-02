@@ -34,7 +34,7 @@ EOF
 
     # Add ssh config to ~@user also.
     sh("mkdir -p /home/#{@user}/.ssh")
-    File.open("/home/#{@user}/.ssh/config"), "a") { |fp| fp.puts(conf) }
+    File.open("/home/#{@user}/.ssh/config", "a") { |fp| fp.puts(conf) }
     sh("chmod 600 /home/#{@user}/.ssh/config")
     sh("chown #{@user}.#{@user} /home/#{@user}/.ssh/config")
     sh("chown #{@user}.#{@user} /home/#{@user}/.ssh/.")
