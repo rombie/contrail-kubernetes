@@ -10,7 +10,7 @@ require "#{@ws}/util"
 
 sh("\grep aurora /etc/hostname", true)
 @controller_host = $?.to_i == 0 ? "aurora" : "kubernetes-master"
-@intf = "eth1"
+@intf = "eth0"
 @user = "ubuntu"
 
 # Find platform OS
