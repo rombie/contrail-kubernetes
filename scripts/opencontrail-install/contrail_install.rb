@@ -84,6 +84,8 @@ def verify_controller
     sh("netstat -anp | \grep LISTEN | \grep -w 8082") # API-Server
     sh("netstat -anp | \grep LISTEN | \grep -w 8086") # Collector
     sh("netstat -anp | \grep LISTEN | \grep -w 8081") # OpServer
+
+    puts "All contrail controller components up"
 end
 
 # Provision contrail-controller
