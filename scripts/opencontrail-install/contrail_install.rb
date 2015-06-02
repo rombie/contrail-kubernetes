@@ -73,7 +73,6 @@ def update_controller_etc_hosts
 end
 
 def verify_controller
-    sleep 30
     sh("netstat -anp | \grep LISTEN | \grep -w 5672") # RabbitMQ
     sh("netstat -anp | \grep LISTEN | \grep -w 2181") # ZooKeeper
     sh("netstat -anp | \grep LISTEN | \grep -w 9160") # Cassandra
@@ -120,6 +119,7 @@ def provision_contrail_controller
     sh("service supervisor-config restart")
     sh("service supervisor-analytics restart")
 
+    sleep 30
     verify_controller
 
     sh(%{python /opt/contrail/utils/provision_control.py --api_server_ip } +
