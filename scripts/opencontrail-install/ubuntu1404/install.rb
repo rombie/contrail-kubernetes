@@ -92,7 +92,7 @@ end
 
 # Install from /cs-shared/builder/cache/centoslinux70/icehouse
 def install_thirdparty_software_controller
-    sh("apt-get -y install openjdk-7-jre rabbitmq-server")
+    sh("apt-get -y install openjdk-7-jre rabbitmq-server zookeeperd")
     sh("apt-get -y install #{@common_packages.join(" ")}")
     @controller_thirdparty_packages.each { |pkg| sh("gdebi -n #{pkg}") }
 end
