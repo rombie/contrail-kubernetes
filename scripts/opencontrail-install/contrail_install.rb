@@ -11,6 +11,7 @@ require "#{@ws}/util"
 sh("\grep aurora /etc/hostname", true)
 @controller_host = $?.to_i == 0 ? "aurora" : "kubernetes-master"
 @intf = "eth1"
+@user = "ubuntu"
 
 # Find platform OS
 sh(%{\grep -i "ubuntu 14" /etc/issue 2>&1 > /dev/null}, true)
@@ -31,14 +32,12 @@ EOF
     File.open("/root/.ssh/config", "a") { |fp| fp.puts(conf) }
     sh("chmod 600 /root/.ssh/config")
 
-    # Add ssh config to ~vagrant also.
-    sh("mkdir -p ~vagrant/.ssh")
-    File.open(File.expand_path("~vagrant/.ssh/config"), "a") { |fp|
-        fp.puts(conf)
-    }
-    sh("chmod 600 ~vagrant/.ssh/config")
-    sh("chown vagrant.vagrant ~vagrant/.ssh/config")
-    sh("chown vagrant.vagrant ~vagrant/.ssh/.")
+    # Add ssh config to ~@user also.
+    sh("mkdir -p /home/#{@user}/.ssh")
+    File.open("/home/#{@user}/.ssh/config"), "a") { |fp| fp.puts(conf) }
+    sh("chmod 600 /home/#{@user}/.ssh/config")
+    sh("chown #{@user}.#{@user} /home/#{@user}/.ssh/config")
+    sh("chown #{@user}.#{@user} /home/#{@user}/.ssh/.")
 end
 
 # Do initial setup
@@ -147,7 +146,7 @@ def provision_contrail_compute
     sh("sed -i 's/# name=vhost0/name=vhost0/' /etc/contrail/contrail-vrouter-agent.conf")
     sh("sed -i 's/# physical_interface=vnet0/physical_interface=#{@intf}/' /etc/contrail/contrail-vrouter-agent.conf")
     sh("sed -i 's/# server=10.204.217.52/server=#{@contrail_controller}/' /etc/contrail/contrail-vrouter-agent.conf")
-    sh("sshpass -p vagrant ssh vagrant@#{@controller_host} sudo python /opt/contrail/utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add")
+    sh("sshpass -p #{@user} ssh -t #{@user}@#{@controller_host} sudo python /opt/contrail/utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add")
     sh("service supervisor-vrouter restart")
     sh("service contrail-vrouter-agent restart")
 
@@ -167,10 +166,10 @@ def provision_contrail_controller_kubernetes
 
     # Start kube web server in background
     # http://localhost:8001/static/app/#/dashboard/
-    sh("nohup /vagrant/cluster/kubectl.sh proxy --www=/vagrant/www 2>&1 > /var/log/kubectl-web-proxy.log", false, 1, true)
+    sh("nohup /#{@user}/cluster/kubectl.sh proxy --www=/#{@user}/www 2>&1 > /var/log/kubectl-web-proxy.log", false, 1, true)
 
     # Start kube-network-manager plugin daemon in background
-    # sh("nohup /vagrant/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, true)
+    # sh("nohup /#{@user}/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, true)
 end
 
 def provision_contrail_compute_kubernetes
