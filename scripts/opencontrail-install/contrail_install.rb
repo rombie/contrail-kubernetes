@@ -118,7 +118,7 @@ def provision_contrail_controller
     sh("service supervisor-config restart")
     sh("service supervisor-analytics restart")
 
-    sleep 30
+    60.times {|i| puts "\rWait for #{i}/60 seconds to settle down..  "; sleep 1}
     verify_controller
 
     sh(%{python /opt/contrail/utils/provision_control.py --api_server_ip } +
