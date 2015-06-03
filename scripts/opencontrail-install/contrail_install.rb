@@ -185,6 +185,15 @@ def provision_contrail_controller_kubernetes
     sh("nohup /#{@user}/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, 1, true)
 end
 
+# http://www.fedora.hk/linux/yumwei/show_45.html
+def fix_docker_file_system_issue
+    sh("service docker stop", true)
+    sh("mv /mnt/docker /mnt/docker.old", true)
+    sh("mkdir -p /mnt/docker/devicemapper/devicemapper", true)
+    sh("dd if=/dev/zero of=/mnt/docker/devicemapper/devicemapper/data bs=1G count=0 seek=250", true)
+    sh("service docker restart", true)
+end
+
 def provision_contrail_compute_kubernetes
     return if @controller_host !~ /kubernetes/
     Dir.chdir("#{@ws}/../opencontrail-kubelet")
@@ -211,9 +220,6 @@ EOF
         sh("systemctl restart kubelet", true)
     else
         sh(%{sed -i 's/DAEMON_ARGS /DAEMON_ARGS --network_plugin=#{plugin} /' /etc/default/kubelet})
-        sh("service docker stop", true)
-        sh("rm -rf /mnt/docker")
-        sh("service docker restart", true)
         sh("service kubelet restart", true)
         sh("service kube-proxy stop", true)
     end
