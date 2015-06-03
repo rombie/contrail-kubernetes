@@ -159,10 +159,11 @@ def provision_contrail_compute
     sh("ifdown #{@intf}; ifup #{@intf}")
     sh("ip addr flush dev #{@intf}")
 
+    # Restore default route
+    sh("ip route add 0.0.0.0/0 gw #{gw}", true)
+
     # Restore DNS resolver
-    @resolvers.each { |r|
-        sh(%{sh -c "echo #{r} >> /etc/resolv.conf"})
-    }
+    # @resolvers.each { |r| sh(%{sh -c "echo #{r} >> /etc/resolv.conf"}) }
     verify_compute
 end
 
