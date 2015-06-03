@@ -45,7 +45,7 @@ end
 def initial_setup
     @resolvers = sh("\grep -w nameserver /etc/resolv.conf").split("\n")
     ssh_setup
-    sh("service hostname restart", true) if @platform =~ /ubuntu/
+    sh("service hostname restart", true) if @platform !~ /fedora/
 #   @contrail_controller = IPSocket.getaddress(@controller_host)
     @contrail_controller =
         sh(%{grep #{@controller_host} /etc/hosts | awk '{print $1}'})
@@ -189,7 +189,9 @@ def provision_contrail_compute_kubernetes
     sh("python setup.py install")
     plugin = "opencontrail"
     sh("mkdir -p /usr/libexec/kubernetes/kubelet-plugins/net/exec/#{plugin}")
-    sh("ln -sf /usr/bin/opencontrail-kubelet-plugin " +
+    path = @platform =~ /fedora/ ? "/usr/bin/opencontrail-kubelet-plugin" :
+                                   "/usr/local/bin/opencontrail-kubelet-plugin"
+    sh("ln -sf #{path} " +
        "/usr/libexec/kubernetes/kubelet-plugins/net/exec/#{plugin}/#{plugin}")
 
     # Generate default plugin configuration file
