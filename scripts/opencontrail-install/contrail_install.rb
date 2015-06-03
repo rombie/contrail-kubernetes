@@ -107,6 +107,10 @@ def provision_contrail_controller
     sh(%{sed -i 's/# password=control-user-passwd/password=control-user-passwd/' /etc/contrail/contrail-control.conf})
     sh(%{sed -i 's/Xss180k/Xss280k/' /etc/cassandra/conf/cassandra-env.sh})
 
+    # Fix webui config
+    sh("ln -sf /usr/bin/nodejs /usr/bin/node")
+    sh(%{sed -i 's/8080/8070/' /etc/contrail/config.global.js})
+
     if @platform =~ /fedora/
         sh("service cassandra restart")
         sh("service zookeeper restart")
@@ -119,6 +123,7 @@ def provision_contrail_controller
     sh("service supervisor-control restart")
     sh("service supervisor-config restart")
     sh("service supervisor-analytics restart")
+    sh("service supervisor-webui restart")
 
     60.times {|i| print "\rWait for #{i}/60 seconds to settle down.. "; sleep 1}
     verify_controller
