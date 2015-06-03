@@ -84,6 +84,8 @@ def verify_controller
     sh("netstat -anp | \grep LISTEN | \grep -w 8082", false, 10, 3) # API-Server
     sh("netstat -anp | \grep LISTEN | \grep -w 8086", false, 10, 3) # Collector
     sh("netstat -anp | \grep LISTEN | \grep -w 8081", false, 10, 3) # OpServer
+    sh("netstat -anp | \grep LISTEN | \grep -w 8143", false, 10, 3) # WebUI
+    sh("netstat -anp | \grep LISTEN | \grep -w 8070", false, 10, 3) # WebUI
 
     puts "All contrail controller components up"
 end
