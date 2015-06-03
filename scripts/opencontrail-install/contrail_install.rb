@@ -211,6 +211,9 @@ EOF
         sh("systemctl restart kubelet", true)
     else
         sh(%{sed -i 's/DAEMON_ARGS /DAEMON_ARGS --network_plugin=#{plugin} /' /etc/default/kubelet})
+        sh("service docker stop", true)
+        sh("rm -rf /mnt/docker")
+        sh("service docker restart", true)
         sh("service kubelet restart", true)
         sh("service kube-proxy stop", true)
     end
