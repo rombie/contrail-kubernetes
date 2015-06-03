@@ -61,7 +61,7 @@ end
 
 def update_controller_etc_hosts
     # Update /etc/hosts with the IP address
-    @controller_ip, mask, gw = get_intf_ip(@intf)
+    @controller_ip, mask, gw, prefix_len = get_intf_ip(@intf)
 
     rip = sh("\grep #{@controller_host} /etc/hosts | awk '{print $1}'", true)
     return if rip != "127.0.0.1" and !rip.empty?
@@ -139,7 +139,7 @@ end
 
 # Provision contrail-vrouter agent and vrouter kernel module
 def provision_contrail_compute
-    ip, mask, gw = get_intf_ip(@intf)
+    ip, mask, gw, prefix_len = get_intf_ip(@intf)
     create_vhost_interface(ip, mask, gw)
 
     sh("sed 's/__DEVICE__/#{@intf}/' /etc/contrail/agent_param.tmpl > /etc/contrail/agent_param")
@@ -148,6 +148,9 @@ def provision_contrail_compute
     sh("sed -i 's/# name=vhost0/name=vhost0/' /etc/contrail/contrail-vrouter-agent.conf")
     sh("sed -i 's/# physical_interface=vnet0/physical_interface=#{@intf}/' /etc/contrail/contrail-vrouter-agent.conf")
     sh("sed -i 's/# server=10.204.217.52/server=#{@contrail_controller}/' /etc/contrail/contrail-vrouter-agent.conf")
+    sh("sed -i 's/# ip=\d+\.\d+\.\d+\.\d+/ip=#{ip}\/#{prefix_len}/' /etc/contrail/contrail-vrouter-agent.conf")
+    sh("sed -i 's/# gateway=\d+\.\d+\.\d+\.\d+/gateway=#{gw}/' /etc/contrail/contrail-vrouter-agent.conf")
+
     sh("sshpass -p #{@user} ssh -t #{@user}@#{@controller_host} sudo python /opt/contrail/utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add")
     sh("service supervisor-vrouter restart")
     sh("service contrail-vrouter-agent restart")
@@ -195,6 +198,11 @@ EOF
 
     sh(%{sed -i 's/DAEMON_ARGS=" /DAEMON_ARGS=" --network_plugin=#{plugin} /' /etc/sysconfig/kubelet})
     sh("systemctl restart kubelet", true)
+end
+
+def aws_setup
+    # Update /etc/hosts
+    # Allow password based login in ssh
 end
 
 def main

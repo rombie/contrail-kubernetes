@@ -30,11 +30,11 @@ def get_intf_ip(intf)
     prefix = sh("ip addr show dev #{intf}|\grep -w inet | " +
                 "\grep -v dynamic | awk '{print $2}'")
     error("Cannot retrieve #{intf}'s IP address") if prefix !~ /(.*)\/(\d+)$/
-    ip = $1
+    ip = $1; prefix_len = $2
     mask = IPAddr.new(prefix).inspect.split("/")[1].chomp.chomp(">")
     gw = sh(%{netstat -rn |\grep "^0.0.0.0" | awk '{print $2}'})
 
-    return ip, mask, gw
+    return ip, mask, gw, prefix_len
 end
 
 def sh_container(container_id, cmd, ignore = false)
