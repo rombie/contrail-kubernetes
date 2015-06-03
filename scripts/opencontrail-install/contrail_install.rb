@@ -197,8 +197,13 @@ EOF
         fp.puts plugin_conf
     }
 
-    sh(%{sed -i 's/DAEMON_ARGS=" /DAEMON_ARGS=" --network_plugin=#{plugin} /' /etc/sysconfig/kubelet})
-    sh("systemctl restart kubelet", true)
+    if @platform =~ /fedora/
+        sh(%{sed -i 's/DAEMON_ARGS=" /DAEMON_ARGS=" --network_plugin=#{plugin} /' /etc/sysconfig/kubelet})
+        sh("systemctl restart kubelet", true)
+    else
+        sh(%{sed -i 's/DAEMON_ARGS=" /DAEMON_ARGS=" --network_plugin=#{plugin} /' /etc/default/kubelet})
+        sh("service kubelet restart", true)
+    end
 end
 
 def aws_setup
