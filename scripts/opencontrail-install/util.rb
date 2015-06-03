@@ -4,7 +4,7 @@ require 'socket'
 require 'ipaddr'
 require 'pp'
 
-def sh(cmd, ignore_exit_code = false, retry_count = 1, bg = false)
+def sh(cmd, ignore_exit_code = false, retry_count = 1, delay = 1, bg = false)
     puts cmd
     if bg then
         # Run command in background
@@ -18,6 +18,7 @@ def sh(cmd, ignore_exit_code = false, retry_count = 1, bg = false)
         puts r
         break if $?.to_i == 0
         exit -1 if !ignore_exit_code and i == retry_count - 1
+        sleep delay
     }
     return r
 end

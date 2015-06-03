@@ -73,16 +73,17 @@ def update_controller_etc_hosts
 end
 
 def verify_controller
-    sh("netstat -anp | \grep LISTEN | \grep -w 5672") # RabbitMQ
-    sh("netstat -anp | \grep LISTEN | \grep -w 2181") # ZooKeeper
-    sh("netstat -anp | \grep LISTEN | \grep -w 9160") # Cassandra
-    sh("netstat -anp | \grep LISTEN | \grep -w #{@control_node_introspect_port}") # Control-Node
-    sh("netstat -anp | \grep LISTEN | \grep -w 5998") # discovery
-    sh("netstat -anp | \grep LISTEN | \grep -w 6379") # redis-server
-    sh("netstat -anp | \grep LISTEN | \grep -w 8443") # IFMAP-Server
-    sh("netstat -anp | \grep LISTEN | \grep -w 8082") # API-Server
-    sh("netstat -anp | \grep LISTEN | \grep -w 8086") # Collector
-    sh("netstat -anp | \grep LISTEN | \grep -w 8081") # OpServer
+    sh("netstat -anp | \grep LISTEN | \grep -w 5672", false, 10) # RabbitMQ
+    sh("netstat -anp | \grep LISTEN | \grep -w 2181, false, 10") # ZooKeeper
+    sh("netstat -anp | \grep LISTEN | \grep -w 9160, false, 10") # Cassandra
+    sh("netstat -anp | \grep LISTEN | \grep -w #{@control_node_introspect_port}",
+       false, 10) # Control-Node
+    sh("netstat -anp | \grep LISTEN | \grep -w 5998", false, 10) # discovery
+    sh("netstat -anp | \grep LISTEN | \grep -w 6379, false, 10") # redis-server
+    sh("netstat -anp | \grep LISTEN | \grep -w 8443, false, 10") # IFMAP-Server
+    sh("netstat -anp | \grep LISTEN | \grep -w 8082, false, 10") # API-Server
+    sh("netstat -anp | \grep LISTEN | \grep -w 8086, false, 10") # Collector
+    sh("netstat -anp | \grep LISTEN | \grep -w 8081, false, 10") # OpServer
 
     puts "All contrail controller components up"
 end
@@ -167,10 +168,10 @@ def provision_contrail_controller_kubernetes
 
     # Start kube web server in background
     # http://localhost:8001/static/app/#/dashboard/
-    sh("nohup /#{@user}/cluster/kubectl.sh proxy --www=/#{@user}/www 2>&1 > /var/log/kubectl-web-proxy.log", false, 1, true)
+    # sh("nohup kubectl proxy --www=/#{@user}/www 2>&1 > /var/log/kubectl-web-proxy.log", false, 1, 1, true)
 
     # Start kube-network-manager plugin daemon in background
-    # sh("nohup /#{@user}/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, true)
+    # sh("nohup /#{@user}/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, 1, true)
 end
 
 def provision_contrail_compute_kubernetes
