@@ -5,7 +5,7 @@
 @pkg_tag = "#{@branch}-#{@tag}"
 
 @common_packages = [
-    "docker",
+#   "docker",
     "gdebi-core",
     "git",
     "sshpass",
