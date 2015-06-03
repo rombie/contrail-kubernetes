@@ -74,16 +74,16 @@ end
 
 def verify_controller
     sh("netstat -anp | \grep LISTEN | \grep -w 5672", false, 10) # RabbitMQ
-    sh("netstat -anp | \grep LISTEN | \grep -w 2181, false, 10") # ZooKeeper
-    sh("netstat -anp | \grep LISTEN | \grep -w 9160, false, 10") # Cassandra
-    sh("netstat -anp | \grep LISTEN | \grep -w #{@control_node_introspect_port}",
+    sh("netstat -anp | \grep LISTEN | \grep -w 2181", false, 10) # ZooKeeper
+    sh("netstat -anp | \grep LISTEN | \grep -w 9160", false, 10) # Cassandra
+    sh("netstat -anp |\grep LISTEN | \grep -w #{@control_node_introspect_port}",
        false, 10) # Control-Node
     sh("netstat -anp | \grep LISTEN | \grep -w 5998", false, 10) # discovery
-    sh("netstat -anp | \grep LISTEN | \grep -w 6379, false, 10") # redis-server
-    sh("netstat -anp | \grep LISTEN | \grep -w 8443, false, 10") # IFMAP-Server
-    sh("netstat -anp | \grep LISTEN | \grep -w 8082, false, 10") # API-Server
-    sh("netstat -anp | \grep LISTEN | \grep -w 8086, false, 10") # Collector
-    sh("netstat -anp | \grep LISTEN | \grep -w 8081, false, 10") # OpServer
+    sh("netstat -anp | \grep LISTEN | \grep -w 6379", false, 10) # redis-server
+    sh("netstat -anp | \grep LISTEN | \grep -w 8443", false, 10) # IFMAP-Server
+    sh("netstat -anp | \grep LISTEN | \grep -w 8082", false, 10) # API-Server
+    sh("netstat -anp | \grep LISTEN | \grep -w 8086", false, 10) # Collector
+    sh("netstat -anp | \grep LISTEN | \grep -w 8081", false, 10) # OpServer
 
     puts "All contrail controller components up"
 end
