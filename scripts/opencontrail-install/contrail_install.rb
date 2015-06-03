@@ -120,7 +120,7 @@ def provision_contrail_controller
     sh("service supervisor-config restart")
     sh("service supervisor-analytics restart")
 
-    60.times {|i| print "\rWait for #{i}/60 seconds to settle down..  "; sleep 1}
+    60.times {|i| print "\rWait for #{i}/60 seconds to settle down.. "; sleep 1}
     verify_controller
 
     sh(%{python /opt/contrail/utils/provision_control.py --api_server_ip } +
@@ -130,7 +130,7 @@ def provision_contrail_controller
 end
 
 def verify_compute
-    sleep 5
+    5.times {|i| print "\rWait for #{i}/5 seconds to settle down.. "; sleep 1}
     sh("lsmod |\grep vrouter")
     sh("netstat -anp | \grep -w LISTEN | \grep -w 8085")
     sh("ping -c 3 #{@controller_host}")
@@ -160,7 +160,7 @@ def provision_contrail_compute
     sh("ip addr flush dev #{@intf}")
 
     # Restore default route
-    sh("ip route add 0.0.0.0/0 gw #{gw}", true)
+    sh("ip route add 0.0.0.0/0 via #{gw}", true)
 
     # Restore DNS resolver
     # @resolvers.each { |r| sh(%{sh -c "echo #{r} >> /etc/resolv.conf"}) }
