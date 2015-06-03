@@ -175,14 +175,14 @@ def provision_contrail_compute
 end
 
 def provision_contrail_controller_kubernetes
-    return if @controller_host !~ /kubernetes/
+    return # if @controller_host !~ /kubernetes/
 
     # Start kube web server in background
     # http://localhost:8001/static/app/#/dashboard/
-    # sh("nohup kubectl proxy --www=/#{@user}/www 2>&1 > /var/log/kubectl-web-proxy.log", false, 1, 1, true)
+    sh("nohup kubectl proxy --www=/#{@user}/www 2>&1 > /var/log/kubectl-web-proxy.log", false, 1, 1, true)
 
     # Start kube-network-manager plugin daemon in background
-    # sh("nohup /#{@user}/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, 1, true)
+    sh("nohup /#{@user}/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, 1, true)
 end
 
 def provision_contrail_compute_kubernetes
