@@ -189,6 +189,8 @@ end
 def fix_docker_file_system_issue
     sh("service docker stop", true)
     sh("mv /mnt/docker /mnt/docker.old", true)
+    sh("mkdir -p /root/docker", true)
+    sh("ln -sf /root/docker /mnt/docker", true)
     sh("mkdir -p /mnt/docker/devicemapper/devicemapper", true)
     sh("dd if=/dev/zero of=/mnt/docker/devicemapper/devicemapper/data bs=1G count=0 seek=250", true)
     sh("service docker restart", true)
