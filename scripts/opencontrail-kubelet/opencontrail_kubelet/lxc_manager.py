@@ -51,7 +51,7 @@ class LxcManager(object):
         # Check if docker is running on a different bridge than default docker0
         br = Shell.run("ps -efww|grep -w docker|grep bridge|grep -v grep", True)
         m = re.search(r'--bridge\W+(.*?)\W', br)
-        if m:
+        if m and len(m.group(1)) > 0:
             bridge = m.group(1)
         return bridge
 
@@ -62,7 +62,8 @@ class LxcManager(object):
 
         # Remove the interface from the bridge
         try:
-            Shell.run('brctl delif %s %s' % (get_docker_bridge(), ifname_master))
+            Shell.run('brctl delif %s %s' % \
+                      (self.get_docker_bridge(), ifname_master))
         except Exception as ex:
             logging.error(ex)
 
