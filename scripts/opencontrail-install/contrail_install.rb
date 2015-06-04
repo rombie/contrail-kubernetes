@@ -213,9 +213,6 @@ def provision_contrail_compute_kubernetes
     # Copy kubectl from kubernets-master node
     sh("sshpass -p #{@user} scp #{@user}@#{@controller_host}:/usr/local/bin/kubectl /usr/local/bin/.")
 
-    # Work-around docker file system mount issue
-    fix_docker_file_system_issue
-
     Dir.chdir("#{@ws}/../opencontrail-kubelet")
     sh("python setup.py install")
     plugin = "opencontrail"
@@ -268,6 +265,7 @@ def main
         provision_contrail_controller_kubernetes
     end
     if ARGV[0] == "compute" or ARGV[0] == "all" then
+        fix_docker_file_system_issue # Work-around docker file system issues
         install_thirdparty_software_compute
         install_contrail_software_compute
         provision_contrail_compute
