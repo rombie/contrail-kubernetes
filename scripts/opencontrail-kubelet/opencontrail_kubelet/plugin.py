@@ -97,8 +97,8 @@ def getDockerPod(docker_id):
     return uid, podName
 
 def getPodInfo(podName):
-    if os.path.isdir("/vagrant"):
-        data = Shell.run('sshpass -p vagrant ssh vagrant@kubernetes-master kubectl get -o json pod %s' % (podName))
+    if os.path.isdir("/home/ubuntu"):
+        data = Shell.run('sshpass -p ubuntu ssh ubuntu@kubernetes-master kubectl get -o json pod %s' % (podName))
     else:
         kubeapi = kubelet_get_api()
 
