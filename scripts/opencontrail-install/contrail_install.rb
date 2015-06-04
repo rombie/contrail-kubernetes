@@ -177,20 +177,23 @@ def provision_contrail_compute
     # Restore default route
     sh("ip route add 0.0.0.0/0 via #{gw}", true)
 
+    # Setup virtual gateway
+    sh("python /opt/contrail/utils/provision_vgw_interface.py --oper create --interface vgw_public --subnets 10.1.0.0/16 --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
+
     # Restore DNS resolver
     # @resolvers.each { |r| sh(%{sh -c "echo #{r} >> /etc/resolv.conf"}) }
     verify_compute
 end
 
 def provision_contrail_controller_kubernetes
-    return # if @controller_host !~ /kubernetes/
+    return if @controller_host !~ /kubernetes/
 
     # Start kube web server in background
     # http://localhost:8001/static/app/#/dashboard/
-    sh("nohup kubectl proxy --www=/#{@user}/www 2>&1 > /var/log/kubectl-web-proxy.log", false, 1, 1, true)
+    sh("nohup kubectl proxy --www=/#{@ws}/build_kubernetes/www 2>&1 > /var/log/kubectl-web-proxy.log", true, 1, 1, true)
 
     # Start kube-network-manager plugin daemon in background
-    sh("nohup /#{@user}/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", false, 1, 1, true)
+    sh("nohup /#{@ws}/build_kubernetes/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", true, 1, 1, true)
 end
 
 # http://www.fedora.hk/linux/yumwei/show_45.html

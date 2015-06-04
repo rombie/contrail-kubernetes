@@ -88,6 +88,7 @@
 def download_contrail_software
     sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/ubuntu1404/contrail.tar.xz?raw=true | tar Jx")
     sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/ubuntu1404/thirdparty.tar.xz?raw=true | tar Jx")
+    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/ubuntu1404/kubernetes.tar.xz?raw=true | tar Jx")
 end
 
 # Install from /cs-shared/builder/cache/centoslinux70/icehouse
