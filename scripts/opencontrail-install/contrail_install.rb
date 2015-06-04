@@ -111,6 +111,7 @@ def provision_contrail_controller
 
     # Fix webui config
     sh("ln -sf /usr/bin/nodejs /usr/bin/node")
+    sh(%{sed -i "s/config.orchestration.Manager = 'openstack'/config.orchestration.Manager = 'none'/" /etc/contrail/config.global.js}
     sh(%{sed -i 's/8080/8070/' /etc/contrail/config.global.js})
 
     if @platform =~ /fedora/
@@ -220,11 +221,19 @@ EOF
     if @platform =~ /fedora/
         sh(%{sed -i 's/DAEMON_ARGS=" /DAEMON_ARGS=" --network_plugin=#{plugin} /' /etc/sysconfig/kubelet})
         sh("systemctl restart kubelet", true)
+        sh("systemctl stop kube-proxy", true)
     else
         sh(%{sed -i 's/DAEMON_ARGS /DAEMON_ARGS --network_plugin=#{plugin} /' /etc/default/kubelet})
         sh("service kubelet restart", true)
+
+        # Disable kube-proxy monitoring and stop the service.
+        sh("mv /etc/monit/conf.d/kube-proxy /etc/monit/.", true)
+        sh("monit reload", true)
         sh("service kube-proxy stop", true)
     end
+
+    # Flush iptable nat entries
+    sh("iptables -F -t nat")
 end
 
 def aws_setup
