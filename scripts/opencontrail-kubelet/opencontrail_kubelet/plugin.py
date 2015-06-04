@@ -138,7 +138,7 @@ def setup(pod_namespace, pod_name, docker_id):
     uid, podName = getDockerPod(docker_id)
 
     podInfo = None
-    for i in range(0, 60):
+    for i in range(0, 120):
         podInfo = getPodInfo(podName)
         if 'annotations' in podInfo["metadata"] and \
            'nic_uuid' in podInfo["metadata"]["annotations"]:
