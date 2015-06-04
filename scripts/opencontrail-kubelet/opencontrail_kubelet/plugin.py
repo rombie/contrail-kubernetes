@@ -77,9 +77,14 @@ def docker_get_pid(docker_id):
 
 
 def kubelet_get_api():
-    fp = open('/etc/kubernetes/kubelet', 'r')
+    fp = None
+    try:
+        fp = open('/etc/kubernetes/kubelet', 'r')
+    except:
+        fp = open('/etc/default/kubelet', 'r')
+
     for line in fp.readlines():
-        m = re.search(r'KUBELET_API_SERVER=\"--api_servers=http://(.*)\"', line)
+        m = re.search(r'--api_servers=http[s]?://(\d+\.\d+\.\d+\.\d+)', line)
         if m:
             return m.group(1)
     return None
@@ -97,12 +102,9 @@ def getDockerPod(docker_id):
     return uid, podName
 
 def getPodInfo(podName):
-    if os.path.isdir("/home/ubuntu"):
-        data = Shell.run('sshpass -p ubuntu ssh ubuntu@kubernetes-master kubectl get -o json pod %s' % (podName))
-    else:
-        kubeapi = kubelet_get_api()
+    kubeapi = kubelet_get_api()
 
-        data = Shell.run('kubectl --server=%s get -o json pod %s' % (
+    data = Shell.run('kubectl --server=%s:7080 get -o json pod %s' % (
             kubeapi, podName))
     return json.loads(data)
     
