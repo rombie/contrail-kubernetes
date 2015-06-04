@@ -11,8 +11,15 @@ STDOUT.sync = true
 
 sh("\grep aurora /etc/hostname", true)
 @controller_host = $?.to_i == 0 ? "aurora" : "kubernetes-master"
+
+# Initialize default interfaces and user account names
+# TODO Take via command line options
 @intf = "eth0"
 @user = "ubuntu"
+if !ENV["KUBERNETES_PROVIDER"].nil? and ENV["KUBERNETES_PROVIDER"]=="vagrant" then
+    @intf = "eth1"
+    @user = "vagrant"
+end
 
 # Find platform OS
 sh(%{\grep -i "ubuntu 14" /etc/issue 2>&1 > /dev/null}, true)
