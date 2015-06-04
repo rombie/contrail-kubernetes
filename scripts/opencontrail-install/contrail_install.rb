@@ -118,7 +118,7 @@ def provision_contrail_controller
 
     # Fix webui config
     sh("ln -sf /usr/bin/nodejs /usr/bin/node", true)
-    sh(%{sed -i "s/config.orchestration.Manager = 'openstack'/config.orchestration.Manager = 'none'/" /etc/contrail/config.global.js}
+    sh(%{sed -i "s/config.orchestration.Manager = 'openstack'/config.orchestration.Manager = 'none'/" /etc/contrail/config.global.js})
     sh(%{sed -i 's/8080/8070/' /etc/contrail/config.global.js})
 
     if @platform =~ /fedora/
