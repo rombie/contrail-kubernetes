@@ -9,7 +9,7 @@ class Shell:
     # Run a shell command. Log the command run and its output.
     @staticmethod
     def run(cmd, ignore=False):
-        logging.debug('sh: %s' % scmd)
+        logging.debug('sh: %s' % cmd)
         try:
             cmd = subprocess.check_output(cmd, shell=True)
         except:
