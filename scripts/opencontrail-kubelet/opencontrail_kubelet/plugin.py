@@ -105,7 +105,7 @@ def getPodInfo(podName):
     kubeapi = kubelet_get_api()
 
     data = Shell.run('kubectl --server=%s:7080 get -o json pod %s' % (
-            kubeapi, podName))
+            kubeapi, podName), True)
     return json.loads(data)
     
 def setup(pod_namespace, pod_name, docker_id):
@@ -138,7 +138,7 @@ def setup(pod_namespace, pod_name, docker_id):
     uid, podName = getDockerPod(docker_id)
 
     podInfo = None
-    for i in range(0, 5):
+    for i in range(0, 10):
         podInfo = getPodInfo(podName)
         if 'annotations' in podInfo["metadata"] and \
            'nic_uuid' in podInfo["metadata"]["annotations"]:
