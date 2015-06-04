@@ -166,7 +166,7 @@ def provision_contrail_compute
     sh("sed -i 's/# ip=[0-9]\\+\.[0-9]\\+\.[0-9]\\+\.[0-9]\\+\\/[0-9]\\+/ip=#{ip}\\/#{prefix_len}/' /etc/contrail/contrail-vrouter-agent.conf")
     sh("sed -i 's/# gateway=[0-9]\\+\.[0-9]\\+\.[0-9]\\+\.[0-9]\\+/gateway=#{gw}/' /etc/contrail/contrail-vrouter-agent.conf")
 
-    sh("sshpass -p #{@user} ssh -t #{@user}@#{@controller_host} sudo python /opt/contrail/utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add")
+    sh("sshpass -p #{@user} ssh -t #{@user}@#{@controller_host} sudo python /opt/contrail/utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add", false, 20, 6)
     sh("service supervisor-vrouter restart")
     sh("service contrail-vrouter-agent restart")
 
