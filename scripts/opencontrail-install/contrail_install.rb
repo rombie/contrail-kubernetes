@@ -16,7 +16,7 @@ sh("\grep aurora /etc/hostname", true)
 # TODO Take via command line options
 @intf = "eth0"
 @user = "ubuntu"
-if !ENV["KUBERNETES_PROVIDER"].nil? and ENV["KUBERNETES_PROVIDER"]=="vagrant" then
+if File.directory? "/vagrant" then
     @intf = "eth1"
     @user = "vagrant"
 end
