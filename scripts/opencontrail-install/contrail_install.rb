@@ -196,7 +196,7 @@ def provision_contrail_compute
 end
 
 def provision_contrail_controller_kubernetes
-    return if @controller_host !~ /kubernetes/
+    return if @role != "controller"
 
     # Start kube web server in background
     # http://localhost:8001/static/app/#/dashboard/
