@@ -52,7 +52,15 @@ def initial_setup
     ssh_setup
 
     sh("service hostname restart", true) if @platform !~ /fedora/
-    @contrail_controller = IPSocket.getaddress(@controller_host)
+
+    begin
+        @contrail_controller = IPSocket.getaddress(@controller_host)
+    rescue
+        # Check in /etc/hosts
+        @contrail_controller =
+            sh(%{grep #{@controller_host} /etc/hosts | awk '{print $1}'})
+    end
+
     error "Cannot resolve controller #{@controller_host}" \
         if @contrail_controller.empty?
 
