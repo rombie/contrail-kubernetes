@@ -7,6 +7,7 @@ raise 'Must run with superuser privilages' unless Process.uid == 0
 
 @controller_host = ARGV[0]
 @role = ARGV[1]
+@setup_kubernetes = true
 
 @ws="#{File.dirname($0)}"
 require "#{@ws}/util"
@@ -196,7 +197,7 @@ def provision_contrail_compute
 end
 
 def provision_contrail_controller_kubernetes
-    return if @role != "controller"
+    return unless @setup_kubernetes
 
     # Start kube web server in background
     # http://localhost:8001/static/app/#/dashboard/
@@ -218,7 +219,7 @@ def fix_docker_file_system_issue
 end
 
 def provision_contrail_compute_kubernetes
-    return if @controller_host !~ /kubernetes/
+    return unless @setup_kubernetes
 
     # Copy kubectl from kubernets-master node
     key_file = "/home/#{@user}/.ssh/contrail_rsa"
