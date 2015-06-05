@@ -9,6 +9,10 @@ raise 'Must run with superuser privilages' unless Process.uid == 0
 @role = ARGV[1]
 @setup_kubernetes = true
 
+@private_net = "10.10.0.0/16"
+@service_net = "10.254.0.0/16"
+@public_net = "10.1.0.0/16"
+
 @ws="#{File.dirname($0)}"
 require "#{@ws}/util"
 
@@ -191,7 +195,7 @@ def provision_contrail_compute
     sh("ip route add 0.0.0.0/0 via #{gw}", true)
 
     # Setup virtual gateway
-    sh("python /opt/contrail/utils/provision_vgw_interface.py --oper create --interface vgw_public --subnets 10.1.0.0/16 --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
+    sh("python /opt/contrail/utils/provision_vgw_interface.py --oper create --interface vgw_public --subnets #{@public_net} --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
 
     verify_compute
 end
@@ -204,7 +208,7 @@ def provision_contrail_controller_kubernetes
     sh("nohup /usr/local/bin/kubectl proxy --www=#{@ws}/build_kubernetes/www 2>&1 > /var/log/kubectl-web-proxy.log", true, 1, 1, true)
 
     # Start kube-network-manager plugin daemon in background
-    sh("nohup #{@ws}/build_kubernetes/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", true, 1, 1, true)
+    sh("nohup #{@ws}/build_kubernetes/kube-network-manager -- --public_net=#{@public_net} --service_net=#{@service_net} --private_net=#{@private_net} 2>&1 > /var/log/contrail/kube-network-manager.log", true, 1, 1, true)
 end
 
 # http://www.fedora.hk/linux/yumwei/show_45.html
