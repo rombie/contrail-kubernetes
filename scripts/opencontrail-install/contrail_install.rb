@@ -11,7 +11,7 @@ raise 'Must run with superuser privilages' unless Process.uid == 0
 @setup_kubernetes = true
 
 @private_net = "10.10.0.0/16"
-@portal_net = "10.254.0.0/16"
+@portal_net = "10.247.0.0/16"
 @public_net = "10.1.0.0/16"
 
 @ws="#{File.dirname($0)}"
