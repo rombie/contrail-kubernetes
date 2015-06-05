@@ -5,12 +5,13 @@
 
 raise 'Must run with superuser privilages' unless Process.uid == 0
 
+#TODO: Add all these through proper command line options
 @controller_host = ARGV[0]
 @role = ARGV[1]
 @setup_kubernetes = true
 
 @private_net = "10.10.0.0/16"
-@service_net = "10.254.0.0/16"
+@portal_net = "10.254.0.0/16"
 @public_net = "10.1.0.0/16"
 
 @ws="#{File.dirname($0)}"
@@ -208,7 +209,7 @@ def provision_contrail_controller_kubernetes
     sh("nohup /usr/local/bin/kubectl proxy --www=#{@ws}/build_kubernetes/www 2>&1 > /var/log/kubectl-web-proxy.log", true, 1, 1, true)
 
     # Start kube-network-manager plugin daemon in background
-    sh("nohup #{@ws}/build_kubernetes/kube-network-manager -- --public_net=#{@public_net} --service_net=#{@service_net} --private_net=#{@private_net} 2>&1 > /var/log/contrail/kube-network-manager.log", true, 1, 1, true)
+    sh(%{nohup #{@ws}/build_kubernetes/kube-network-manager -- --public_net="#{@public_net}" --portal_net="#{@portal_net}" --private_net="#{@private_net}" 2>&1 > /var/log/contrail/kube-network-manager.log}, true, 1, 1, true)
 end
 
 # http://www.fedora.hk/linux/yumwei/show_45.html
