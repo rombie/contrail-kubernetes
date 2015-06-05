@@ -151,8 +151,10 @@ def setup(pod_namespace, pod_name, docker_id):
         logging.error('No annotations in pod %s', podInfo["metadata"]["name"])
         sys.exit(1)
 
-    nic_uuid = podInfo["metadata"]["annotations"]["nic_uuid"]
-    mac_address = podInfo["metadata"]["annotations"]["mac_address"]
+
+    podAnnotations = podInfo["metadata"]["annotations"]
+    nic_uuid = podAnnotations["nic_uuid"]
+    mac_address = podAnnotations["mac_address"]
     if client._net_mode == 'none':
         ifname = manager.create_interface(short_id, instance_ifname,
                                           mac_address)
@@ -166,8 +168,8 @@ def setup(pod_namespace, pod_name, docker_id):
                  display_name=podName,
                  hostname=podName+'.'+pod_namespace)
 
-    ip_address = podInfo["metadata"]["annotations"]["ip_address"]
-    gateway = podInfo["metadata"]["annotations"]["gateway"]
+    ip_address = podAnnotations["ip_address"]
+    gateway = podAnnotations["gateway"]
     Shell.run('ip netns exec %s ip addr add %s/32 peer %s dev %s' % \
               (short_id, ip_address, gateway, instance_ifname))
     Shell.run('ip netns exec %s ip route add default via %s' % \
