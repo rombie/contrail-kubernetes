@@ -209,6 +209,8 @@ end
 
 # http://www.fedora.hk/linux/yumwei/show_45.html
 def fix_docker_file_system_issue
+    return if @platform !~ /ubuntu/
+
     sh("service docker stop", true)
     sh("mv /mnt/docker /mnt/docker.old", true)
     sh("mkdir -p /root/docker", true)
