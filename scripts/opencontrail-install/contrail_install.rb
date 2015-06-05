@@ -201,7 +201,7 @@ def provision_contrail_controller_kubernetes
 
     # Start kube web server in background
     # http://localhost:8001/static/app/#/dashboard/
-    sh("nohup kubectl proxy --www=#{@ws}/build_kubernetes/www 2>&1 > /var/log/kubectl-web-proxy.log", true, 1, 1, true)
+    sh("nohup /usr/local/bin/kubectl proxy --www=#{@ws}/build_kubernetes/www 2>&1 > /var/log/kubectl-web-proxy.log", true, 1, 1, true)
 
     # Start kube-network-manager plugin daemon in background
     sh("nohup #{@ws}/build_kubernetes/kube-network-manager 2>&1 > /var/log/contrail/kube-network-manager.log", true, 1, 1, true)
