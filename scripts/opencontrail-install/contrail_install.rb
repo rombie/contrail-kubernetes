@@ -5,12 +5,11 @@
 
 raise 'Must run with superuser privilages' unless Process.uid == 0
 
+@controller_host = ARGV[0]
+@role = ARGV[1]
+
 @ws="#{File.dirname($0)}"
 require "#{@ws}/util"
-STDOUT.sync = true
-
-sh("\grep aurora /etc/hostname", true)
-@controller_host = $?.to_i == 0 ? "aurora" : "kubernetes-master"
 
 # Initialize default interfaces and user account names
 # TODO Take via command line options
@@ -24,8 +23,6 @@ end
 # Find platform OS
 sh(%{\grep -i "ubuntu 14" /etc/issue 2>&1 > /dev/null}, true)
 @platform = $?.to_i == 0 ? "ubuntu1404" : "fedora20"
-
-@control_node_introspect_port = @controller_host == "aurora" ? 9083 : "8083"
 
 require "#{@ws}/#{@platform}/install"
 
@@ -50,13 +47,13 @@ end
 
 # Do initial setup
 def initial_setup
-    @resolvers = sh("\grep -w nameserver /etc/resolv.conf").split("\n")
+    STDOUT.sync = true
+    @control_node_introspect_port = @controller_host == "aurora" ? 9083 : "8083"
     ssh_setup
+
     sh("service hostname restart", true) if @platform !~ /fedora/
-#   @contrail_controller = IPSocket.getaddress(@controller_host)
-    @contrail_controller =
-        sh(%{grep #{@controller_host} /etc/hosts | awk '{print $1}'})
-    error "Cannot resolve contrail-controller host" \
+    @contrail_controller = IPSocket.getaddress(@controller_host)
+    error "Cannot resolve controller #{@controller_host}" \
         if @contrail_controller.empty?
 
     # Make sure that localhost resolves to 127.0.0.1
@@ -171,7 +168,9 @@ def provision_contrail_compute
     sh("sed -i 's/# ip=[0-9]\\+\.[0-9]\\+\.[0-9]\\+\.[0-9]\\+\\/[0-9]\\+/ip=#{ip}\\/#{prefix_len}/' /etc/contrail/contrail-vrouter-agent.conf")
     sh("sed -i 's/# gateway=[0-9]\\+\.[0-9]\\+\.[0-9]\\+\.[0-9]\\+/gateway=#{gw}/' /etc/contrail/contrail-vrouter-agent.conf")
 
-    sh("sshpass -p #{@user} ssh -t #{@user}@#{@controller_host} sudo python /opt/contrail/utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add", false, 20, 6)
+    key_file = "/home/#{@user}/.ssh/contrail_rsa"
+    key = File.file?(key_file) ? "-i #{key_file}" : ""
+    sh("sshpass -p #{@user} ssh -t #{key} #{@user}@#{@controller_host} sudo python /opt/contrail/utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add", false, 20, 6)
     sh("service supervisor-vrouter restart")
     sh("service contrail-vrouter-agent restart")
 
@@ -185,8 +184,6 @@ def provision_contrail_compute
     # Setup virtual gateway
     sh("python /opt/contrail/utils/provision_vgw_interface.py --oper create --interface vgw_public --subnets 10.1.0.0/16 --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
 
-    # Restore DNS resolver
-    # @resolvers.each { |r| sh(%{sh -c "echo #{r} >> /etc/resolv.conf"}) }
     verify_compute
 end
 
@@ -216,7 +213,9 @@ def provision_contrail_compute_kubernetes
     return if @controller_host !~ /kubernetes/
 
     # Copy kubectl from kubernets-master node
-    sh("sshpass -p #{@user} scp #{@user}@#{@controller_host}:/usr/local/bin/kubectl /usr/local/bin/.")
+    key_file = "/home/#{@user}/.ssh/contrail_rsa"
+    key = File.file?(key_file) ? "-i #{key_file}" : ""
+    sh("sshpass -p #{@user} scp #{key} #{@user}@#{@controller_host}:/usr/local/bin/kubectl /usr/local/bin/.")
 
     Dir.chdir("#{@ws}/../opencontrail-kubelet")
     sh("python setup.py install")
@@ -263,13 +262,13 @@ end
 def main
     initial_setup
     download_contrail_software
-    if ARGV[0] == "controller" or ARGV[0] == "all" then
+    if @role == "controller" or @role == "all" then
         install_thirdparty_software_controller
         install_contrail_software_controller
         provision_contrail_controller
         provision_contrail_controller_kubernetes
     end
-    if ARGV[0] == "compute" or ARGV[0] == "all" then
+    if @role == "compute" or @role == "all" then
         fix_docker_file_system_issue # Work-around docker file system issues
         install_thirdparty_software_compute
         install_contrail_software_compute
