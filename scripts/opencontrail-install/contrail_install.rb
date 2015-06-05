@@ -137,6 +137,16 @@ def provision_contrail_controller
     sh(%{sed -i "s/config.orchestration.Manager = 'openstack'/config.orchestration.Manager = 'none'/" /etc/contrail/config.global.js})
     sh(%{sed -i 's/8080/8070/' /etc/contrail/config.global.js})
 
+    # Fix nodemgr configs
+    nodemgr_conf = <<EOF
+[COLLECTOR]
+server_list=#{@contrail_controller}:8086
+EOF
+    File.open("contrail-control-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
+    File.open("contrail-database-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
+    File.open("contrail-analytics-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
+    File.open("contrail-config-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
+
     if @platform =~ /fedora/
         sh("service cassandra restart")
         sh("service zookeeper restart")
@@ -182,6 +192,15 @@ def provision_contrail_compute
     sh("sed -i 's/# ip=[0-9]\\+\.[0-9]\\+\.[0-9]\\+\.[0-9]\\+\\/[0-9]\\+/ip=#{ip}\\/#{prefix_len}/' /etc/contrail/contrail-vrouter-agent.conf")
     sh("sed -i 's/# gateway=[0-9]\\+\.[0-9]\\+\.[0-9]\\+\.[0-9]\\+/gateway=#{gw}/' /etc/contrail/contrail-vrouter-agent.conf")
 
+    nodemgr_conf = <<EOF
+[DISCOVERY]
+server=#{@contrail_controller}
+port=5998
+[COLLECTOR]
+server_list=#{@contrail_controller}:8086
+EOF
+    File.open("contrail-vrouter-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
+
     key_file = "/home/#{@user}/.ssh/contrail_rsa"
     key = File.file?(key_file) ? "-i #{key_file}" : ""
     sh("sshpass -p #{@user} ssh -t #{key} #{@user}@#{@controller_host} sudo python /opt/contrail/utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add", false, 20, 6)
@@ -206,6 +225,7 @@ def provision_contrail_controller_kubernetes
 
     # Start kube web server in background
     # http://localhost:8001/static/app/#/dashboard/
+    sh("ln -sf /usr/local/bin/kubectl /usr/bin/kubectl", true)
     sh("nohup /usr/local/bin/kubectl proxy --www=#{@ws}/build_kubernetes/www 2>&1 > /var/log/kubectl-web-proxy.log", true, 1, 1, true)
 
     # Start kube-network-manager plugin daemon in background
@@ -232,6 +252,7 @@ def provision_contrail_compute_kubernetes
     key_file = "/home/#{@user}/.ssh/contrail_rsa"
     key = File.file?(key_file) ? "-i #{key_file}" : ""
     sh("sshpass -p #{@user} scp #{key} #{@user}@#{@controller_host}:/usr/local/bin/kubectl /usr/local/bin/.")
+    sh("ln -sf /usr/local/bin/kubectl /usr/bin/kubectl", true)
 
     Dir.chdir("#{@ws}/../opencontrail-kubelet")
     sh("python setup.py install")
