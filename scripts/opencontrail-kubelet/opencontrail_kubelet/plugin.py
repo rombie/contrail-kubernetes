@@ -79,7 +79,7 @@ def docker_get_pid(docker_id):
 def kubelet_get_api():
     fp = None
     try:
-        fp = open('/etc/kubernetes/kubelet', 'r')
+        fp = open('/etc/sysconfig/kubelet', 'r')
     except:
         fp = open('/etc/default/kubelet', 'r')
 
