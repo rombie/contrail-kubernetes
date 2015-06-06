@@ -142,10 +142,10 @@ def provision_contrail_controller
 [COLLECTOR]
 server_list=127.0.0.1:8086
 EOF
-    File.open("contrail-control-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
-    File.open("contrail-database-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
-    File.open("contrail-analytics-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
-    File.open("contrail-config-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
+    File.open("/etc/contrail/contrail-control-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
+    File.open("/etc/contrail/contrail-database-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
+    File.open("/etc/contrail/contrail-analytics-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
+    File.open("/etc/contrail/contrail-config-nodemgr.conf", "a") {|fp| fp.puts nodemgr_conf}
 
     if @platform =~ /fedora/
         sh("service cassandra restart")
@@ -199,7 +199,7 @@ port=5998
 [COLLECTOR]
 server_list=#{@contrail_controller}:8086
 EOF
-    File.open("contrail-vrouter-nodemgr.conf", "w") {|fp| fp.puts nodemgr_conf}
+    File.open("/etc/contrail/contrail-vrouter-nodemgr.conf", "w") {|fp| fp.puts nodemgr_conf}
 
     key_file = "/home/#{@user}/.ssh/contrail_rsa"
     key = File.file?(key_file) ? "-i #{key_file}" : ""
