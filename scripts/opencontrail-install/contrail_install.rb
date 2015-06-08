@@ -311,7 +311,6 @@ def main
         install_contrail_software_controller
         provision_contrail_controller
         provision_contrail_controller_kubernetes
-        sleep 10
     end
     if @role == "compute" or @role == "all" then
         fix_docker_file_system_issue # Work-around docker file system issues
@@ -320,6 +319,9 @@ def main
         provision_contrail_compute
         provision_contrail_compute_kubernetes
     end
+
+    # Wait a bit before exiting
+    sleep 10
 end
 
 main
