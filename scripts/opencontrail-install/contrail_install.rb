@@ -76,6 +76,7 @@ def initial_setup
     sh("echo 127.0.0.1 localhost >> /etc/hosts") if $?.to_i != 0
 
     Dir.chdir("#{@ws}")
+    sh("mkdir -p /var/crashes", true)
 end
 
 def update_controller_etc_hosts
