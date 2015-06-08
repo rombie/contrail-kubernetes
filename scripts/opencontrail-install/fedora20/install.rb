@@ -54,7 +54,6 @@
     "python-kazoo",
     "python-ncclient",
     "python-kombu",
-    "nodejs-0.10.35",
 ]
 
 @controller_contrail_packages = [
@@ -108,13 +107,17 @@ end
 # Install from /cs-shared/builder/cache/centoslinux70/juno
 def install_thirdparty_software_controller
     sh("yum -y remove java-1.8.0-openjdk java-1.8.0-openjdk-headless")
-    sh("curl -sL https://rpm.nodesource.com/setup | bash -")
     sh("yum -y install #{@controller_thirdparty_packages.join(" ")}")
 end
 
 # Install contrail controller software
 def install_contrail_software_controller
     sh("yum -y install #{@controller_contrail_packages.join(" ")}")
+
+    # Install node-v0.8.15
+    # sh("wget -O - http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz | tar xz")
+    # sh("cd node && ./configure && make all install")
+    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/contrail_web_core.tar.xz?raw=true | tar -C /usr/src/contrail/ -Jx")
 
     sh("rpm2cpio #{@ws}/contrail/controller/build/package-build/RPMS/noarch/contrail-openstack-database-#{@pkg_tag}.fc20.noarch.rpm | cpio -idmv")
     sh("cp etc/rc.d/init.d/zookeeper /etc/rc.d/init.d/")
