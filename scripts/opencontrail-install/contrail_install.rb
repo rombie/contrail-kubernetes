@@ -21,10 +21,12 @@ require "#{@ws}/util"
 # TODO Take via command line options
 @intf = "eth0"
 @user = "ubuntu"
+@vagrant = false
 if File.directory? "/vagrant" then
     @intf = "eth1"
     @user = "vagrant"
     @portal_net = "10.247.0.0/16"
+    @vagrant = true
 end
 
 # Find platform OS
@@ -230,6 +232,9 @@ def provision_contrail_controller_kubernetes
 
     # Start kube-network-manager plugin daemon in background
     sh(%{#{@ws}/build_kubernetes/kube-network-manager -- --public_net="#{@public_net}" --portal_net="#{@portal_net}" --private_net="#{@private_net}" 2>&1 > /var/log/contrail/kube-network-manager.log}, true, 1, 1, true)
+
+    # Add public_net route in vagrant setup.
+    sh(%{ip route add #{@public_net} via `grep kubernetes-minion-1 /etc/hosts | awk '{print $1}'`}, true) if @vagrant
 end
 
 # http://www.fedora.hk/linux/yumwei/show_45.html
