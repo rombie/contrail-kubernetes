@@ -312,6 +312,7 @@ def main
         provision_contrail_compute
         provision_contrail_compute_kubernetes
     end
+    sleep 5
 end
 
 main
