@@ -54,6 +54,7 @@
     "python-kazoo",
     "python-ncclient",
     "python-kombu",
+    "nodejs-0.10.35",
 ]
 
 @controller_contrail_packages = [
