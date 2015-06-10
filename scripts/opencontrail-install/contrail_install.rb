@@ -95,6 +95,26 @@ def update_controller_etc_hosts
 end
 
 def verify_controller
+    commands = <<EOF
+netstat -anp | \grep LISTEN | \grep -w 5672
+netstat -anp | \grep LISTEN | \grep -w 2181
+netstat -anp | \grep LISTEN | \grep -w 9160
+netstat -anp | \grep LISTEN | \grep -w 8083
+netstat -anp | \grep LISTEN | \grep -w 5998
+netstat -anp | \grep LISTEN | \grep -w 6379
+netstat -anp | \grep LISTEN | \grep -w 8443
+netstat -anp | \grep LISTEN | \grep -w 8082
+netstat -anp | \grep LISTEN | \grep -w 8086
+netstat -anp | \grep LISTEN | \grep -w 8087
+netstat -anp | \grep LISTEN | \grep -w 8081
+netstat -anp | \grep LISTEN | \grep -w 8094
+netstat -anp | \grep LISTEN | \grep -w 53
+netstat -anp | \grep LISTEN | \grep -w 8143
+netstat -anp | \grep LISTEN | \grep -w 8070
+
+netstat -anp | \grep LISTEN | \grep -w 8085
+EOF
+
     sh("netstat -anp | \grep LISTEN | \grep -w 5672", false, 10, 3) # RabbitMQ
     sh("netstat -anp | \grep LISTEN | \grep -w 2181", false, 10, 3) # ZooKeeper
     sh("netstat -anp | \grep LISTEN | \grep -w 9160", false, 10, 3) # Cassandra
@@ -105,7 +125,11 @@ def verify_controller
     sh("netstat -anp | \grep LISTEN | \grep -w 8443", false, 10, 3) # IFMAP
     sh("netstat -anp | \grep LISTEN | \grep -w 8082", false, 10, 3) # API-Server
     sh("netstat -anp | \grep LISTEN | \grep -w 8086", false, 10, 3) # Collector
+    sh("netstat -anp | \grep LISTEN | \grep -w 8087", false, 10, 3) # Schema
     sh("netstat -anp | \grep LISTEN | \grep -w 8081", false, 10, 3) # OpServer
+
+    sh("netstat -anp | \grep LISTEN | \grep -w 8094", false, 10, 3) # DNS
+    sh("netstat -anp | \grep LISTEN | \grep -w 53", false, 10, 3)   # named
 
     sh("netstat -anp | \grep LISTEN | \grep -w 8143", false, 10, 3) # WebUI
     sh("netstat -anp | \grep LISTEN | \grep -w 8070", false, 10, 3) # WebUI
@@ -117,20 +141,19 @@ end
 def provision_contrail_controller
     update_controller_etc_hosts
 
-    sh(%{sed -i 's/Xss180k/Xss280k/' /etc/cassandra/conf/cassandra-env.sh})
-    sh(%{echo "api-server:api-server" >> /etc/ifmap-server/basicauthusers.properties})
-    sh(%{echo "schema-transformer:schema-transformer" >> /etc/ifmap-server/basicauthusers.properties})
-    sh(%{echo "svc-monitor:svc-monitor" >> /etc/ifmap-server/basicauthusers.properties})
-    sh(%{echo "control-user:control-user-passwd" >> /etc/ifmap-server/basicauthusers.properties})
-    sh(%{sed -i 's/911%(process_num)01d/5998/' /etc/contrail/supervisord_config_files/contrail-discovery.ini})
-    sh(%{sed -i 's/91%(process_num)02d/8082/' /etc/contrail/supervisord_config_files/contrail-api.ini})
-    sh(%{sed -i 's/# port=5998/port=5998/' /etc/contrail/contrail-control.conf})
-    sh(%{sed -i 's/# server=127.0.0.1/server=127.0.0.1/' /etc/contrail/contrail-control.conf})
-    sh(%{sed -i 's/# port=5998/port=5998/' /etc/contrail/contrail-collector.conf})
-    sh(%{sed -i 's/# server=0.0.0.0/server=127.0.0.1/' /etc/contrail/contrail-collector.conf})
-    sh(%{sed -i 's/# user=control-user/user=control-user/g' /etc/contrail/contrail-control.conf})
-    sh(%{sed -i 's/# password=control-user-passwd/password=control-user-passwd/' /etc/contrail/contrail-control.conf})
-    sh(%{sed -i 's/Xss180k/Xss280k/' /etc/cassandra/conf/cassandra-env.sh})
+#   sh(%{sed -i 's/Xss180k/Xss280k/' /etc/cassandra/conf/cassandra-env.sh})
+#   sh(%{echo "api-server:api-server" >> /etc/ifmap-server/basicauthusers.properties})
+#   sh(%{echo "schema-transformer:schema-transformer" >> /etc/ifmap-server/basicauthusers.properties})
+#   sh(%{echo "svc-monitor:svc-monitor" >> /etc/ifmap-server/basicauthusers.properties})
+#   sh(%{echo "control-user:control-user-passwd" >> /etc/ifmap-server/basicauthusers.properties})
+#   sh(%{sed -i 's/911%(process_num)01d/5998/' /etc/contrail/supervisord_config_files/contrail-discovery.ini})
+#   sh(%{sed -i 's/91%(process_num)02d/8082/' /etc/contrail/supervisord_config_files/contrail-api.ini})
+#   sh(%{sed -i 's/# port=5998/port=5998/' /etc/contrail/contrail-control.conf})
+#   sh(%{sed -i 's/# server=127.0.0.1/server=127.0.0.1/' /etc/contrail/contrail-control.conf})
+#   sh(%{sed -i 's/# port=5998/port=5998/' /etc/contrail/contrail-collector.conf})
+#   sh(%{sed -i 's/# server=0.0.0.0/server=127.0.0.1/' /etc/contrail/contrail-collector.conf})
+#   sh(%{sed -i 's/# user=control-user/user=control-user/g' /etc/contrail/contrail-control.conf})
+#   sh(%{sed -i 's/# password=control-user-passwd/password=control-user-passwd/' /etc/contrail/contrail-control.conf})
 
     # Fix webui config
     if !File.file? "/usr/bin/node" then
@@ -161,7 +184,9 @@ EOF
     sh("service supervisor-control restart")
     sh("service supervisor-config restart")
     sh("service supervisor-analytics restart")
-    sh("service supervisor-webui restart")
+
+    sh("service supervisor-webui restart", true)
+    sh("restart contrail-webui-webserver", true)
 
     60.times {|i| print "\rWait for #{i}/60 seconds to settle down.. "; sleep 1}
     verify_controller
