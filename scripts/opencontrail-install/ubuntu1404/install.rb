@@ -97,8 +97,8 @@ def install_thirdparty_software_compute
     sh("apt-get -y install #{@common_packages.join(" ")}")
 
     # Update time-zone
-    sh("echo 'America/Los_Angeles' > /etc/timezone"
-    sh("dpkg-reconfigure -f noninteractive tzdata"
+    sh("echo 'America/Los_Angeles' > /etc/timezone")
+    sh("dpkg-reconfigure -f noninteractive tzdata")
 end
 
 # Install contrail compute software
