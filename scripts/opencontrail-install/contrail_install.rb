@@ -186,7 +186,13 @@ def provision_contrail_controller
     60.times {|i| print "\rWait for #{i}/60 seconds to settle down.. "; sleep 1}
     verify_controller
 
-    sh(%{python /opt/contrail/utils/provision_control.py --api_server_ip } +
+    if @platform =~ /fedora/ then
+        provision_control = "/opt/contrail/utils/provision_control.py"
+    else
+        provision_control = "/usr/share/contrail-utils/"
+    end
+
+    sh(%{python #{provision_control} --api_server_ip } +
        %{#{@controller_ip} --api_server_port 8082 --router_asn 64512 } +
        %{--host_name #{@controller_host} --host_ip #{@controller_ip} } +
        %{--oper add })

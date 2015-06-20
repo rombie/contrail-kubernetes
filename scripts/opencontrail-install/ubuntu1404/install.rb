@@ -29,7 +29,9 @@ end
 
 # Install contrail controller software
 def install_contrail_software_controller
-    sh("wget https://answers.launchpad.net/~syseleven-platform/+archive/ubuntu/contrail-2.0/+build/6635035/+files/nodejs_0.8.15-1contrail1_amd64.deb")
+    if !File.file? "nodejs_0.8.15-1contrail1_amd64.deb" then
+        sh("wget https://answers.launchpad.net/~syseleven-platform/+archive/ubuntu/contrail-2.0/+build/6635035/+files/nodejs_0.8.15-1contrail1_amd64.deb")
+    end
     sh("dpkg -i nodejs_0.8.15-1contrail1_amd64.deb")
     sh("dpkg -i /home/ubuntu/python-kafka-python_0.9.2-0contrail0_all.deb")
 
