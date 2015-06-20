@@ -189,7 +189,7 @@ def provision_contrail_controller
     if @platform =~ /fedora/ then
         provision_control = "/opt/contrail/utils/provision_control.py"
     else
-        provision_control = "/usr/share/contrail-utils/"
+        provision_control = "/usr/share/contrail-utils/provision_control.py"
     end
 
     sh(%{python #{provision_control} --api_server_ip } +
