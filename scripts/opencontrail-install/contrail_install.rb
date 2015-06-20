@@ -245,11 +245,11 @@ EOF
     sh("service contrail-vrouter-agent restart")
 
     # Remove ip address from the interface as that is taken over by vhost0
-    sh("ifdown #{@intf}; ifup #{@intf}")
-#   sh("ip addr flush dev #{@intf}")
+    sh("ifdown #{@intf}; ifup #{@intf}", true, 1, 1, true)
+    sh("ip addr flush dev #{@intf}", true, 1, 1, true)
 
     # Restore default route
-    sh("ip route add 0.0.0.0/0 via #{gw}", true)
+    sh("ip route add 0.0.0.0/0 via #{gw}", true, 1, 1, true)
 
     # Setup virtual gateway
     sh("python #{@utils}/provision_vgw_interface.py --oper create --interface vgw_public --subnets #{@public_net} --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
