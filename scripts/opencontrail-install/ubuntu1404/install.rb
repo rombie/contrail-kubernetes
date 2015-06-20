@@ -45,7 +45,7 @@ def install_kube_network_manager (kubernetes_branch = "release-0.17",
     ENV["TARGET"]="#{ENV["HOME"]}/contrail"
     ENV["CONTRAIL_BRANCH"]="master"
     ENV["KUBERNETES_BRANCH"]="release-0.17"
-    ENV["GOPATH"]="#{ENV["TARGET"]}/kubernetes/Godeps/_workspace
+    ENV["GOPATH"]="#{ENV["TARGET"]}/kubernetes/Godeps/_workspace"
 
     sh("rm -rf #{ENV["TARGET"]}")
     sh("mkdir -p #{ENV["TARGET"]}")
