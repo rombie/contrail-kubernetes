@@ -57,7 +57,7 @@ def install_kube_network_manager (kubernetes_branch = "release-0.17",
     sh("rm -rf #{ENV["TARGET"]}")
     sh("mkdir -p #{ENV["TARGET"]}")
     Dir.chdir(ENV["TARGET"])
-    user = "rombie # Juniper
+    user = "rombie" # "Juniper"
 
     commands=<<EOF
 apt-get -y --allow-unauthenticated install curl wget software-properties-common git python-lxml gcc
