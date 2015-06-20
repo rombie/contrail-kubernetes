@@ -206,9 +206,24 @@ def provision_contrail_compute
     ip, mask, gw, prefix_len = get_intf_ip(@intf)
     create_vhost_interface(ip, mask, gw)
 
+    templ=<<EOF
+LOG=/var/log/contrail.log
+CONFIG=/etc/contrail/agent.conf
+prog=/usr/bin/contrail-vrouter-agent
+kmod=vrouter
+pname=contrail-vrouter-agent
+LIBDIR=/usr/lib64
+DEVICE=vhost0
+dev=__DEVICE__
+vgw_subnet_ip=__VGW_SUBNET_IP__
+vgw_intf=__VGW_INTF_LIST__
+LOGFILE=--log-file=/var/log/contrail/vrouter.log
+EOF
+    File.open("/etc/contrail/agent_param.tmpl", "w") { |fp| fp.puts templ}
+
     sh("sed 's/__DEVICE__/#{@intf}/' /etc/contrail/agent_param.tmpl > /etc/contrail/agent_param")
     sh("sed -i 's/# type=kvm/type=kvm/' /etc/contrail/contrail-vrouter-agent.conf")
-    sh("touch /etc/contrail/default_pmac")
+#   sh("touch /etc/contrail/default_pmac")
     sh("sed -i 's/# name=vhost0/name=vhost0/' /etc/contrail/contrail-vrouter-agent.conf")
     sh("sed -i 's/# physical_interface=vnet0/physical_interface=#{@intf}/' /etc/contrail/contrail-vrouter-agent.conf")
     sh("sed -i 's/# server=10.204.217.52/server=#{@contrail_controller}/' /etc/contrail/contrail-vrouter-agent.conf")
