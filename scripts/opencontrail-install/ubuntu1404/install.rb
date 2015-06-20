@@ -40,6 +40,10 @@ def install_contrail_software_controller
     sh("add-apt-repository -y ppa:anantha-l/opencontrail")
     sh("apt-get -y --allow-unauthenticated update")
     sh("apt-get -y --allow-unauthenticated install contrail-analytics contrail-config contrail-control contrail-web-controller contrail-dns contrail-utils cassandra zookeeperd rabbitmq-server ifmap-server")
+
+    # Update time-zone
+    sh("echo 'America/Los_Angeles' > /etc/timezone")
+    sh("dpkg-reconfigure -f noninteractive tzdata")
 end
 
 def install_kube_network_manager (kubernetes_branch = "release-0.17",
@@ -96,10 +100,6 @@ end
 def install_thirdparty_software_compute
     sh("apt-get -y install #{@common_packages.join(" ")}")
     sh("dpkg -i /home/ubuntu/python-docker-py_0.6.1-dev_all.deb")
-
-    # Update time-zone
-    sh("echo 'America/Los_Angeles' > /etc/timezone")
-    sh("dpkg-reconfigure -f noninteractive tzdata")
 end
 
 # Install contrail compute software
@@ -108,4 +108,8 @@ def install_contrail_software_compute
     sh("add-apt-repository -y ppa:anantha-l/opencontrail")
     sh("apt-get -y --allow-unauthenticated update")
     sh("apt-get -y --allow-unauthenticated install contrail-vrouter-agent")
+
+    # Update time-zone
+    sh("echo 'America/Los_Angeles' > /etc/timezone")
+    sh("dpkg-reconfigure -f noninteractive tzdata")
 end
