@@ -57,6 +57,7 @@ def install_kube_network_manager (kubernetes_branch = "release-0.17",
     sh("rm -rf #{ENV["TARGET"]}")
     sh("mkdir -p #{ENV["TARGET"]}")
     Dir.chdir(ENV["TARGET"])
+    user = "rombie # Juniper
 
     commands=<<EOF
 apt-get -y --allow-unauthenticated install curl wget software-properties-common git python-lxml gcc
@@ -73,11 +74,11 @@ mkdir -p ./kubernetes/Godeps/_workspace/src/github.com/rombie/
 ln -sf /root/contrail-kubernetes ./kubernetes/Godeps/_workspace/src/github.com/rombie/contrail-kubernetes
 mkdir -p #{ENV["GOPATH"]}/src/github.com/GoogleCloudPlatform
 ln -sf #{ENV["TARGET"]}/kubernetes #{ENV["GOPATH"]}/src/github.com/GoogleCloudPlatform/kubernetes
-sed -i 's/ClusterIP/PortalIP/' ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-kubernetes/pkg/network/opencontrail/controller.go
-sed -i 's/DeprecatedPublicIPs/PublicIPs/' ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-kubernetes/pkg/network/opencontrail/controller.go
+sed -i 's/ClusterIP/PortalIP/' ./kubernetes/Godeps/_workspace/src/github.com/#{user}/contrail-kubernetes/pkg/network/opencontrail/controller.go
+sed -i 's/DeprecatedPublicIPs/PublicIPs/' ./kubernetes/Godeps/_workspace/src/github.com/#{user}/contrail-kubernetes/pkg/network/opencontrail/controller.go
 go build github.com/Juniper/contrail-go-api/cli
-go build github.com/Juniper/contrail-kubernetes/pkg/network
-go build github.com/Juniper/contrail-kubernetes/cmd/kube-network-manager
+go build github.com/#{user}/contrail-kubernetes/pkg/network
+go build github.com/#{user}/contrail-kubernetes/cmd/kube-network-manager
 EOF
     commands.split(/\n/).each { |cmd| sh(cmd) }
 end
