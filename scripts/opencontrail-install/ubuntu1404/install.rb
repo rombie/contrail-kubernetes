@@ -69,6 +69,7 @@ wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CON
 wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CONTRAIL_BRANCH"]}/src/schema/loadbalancer.xsd || true
 git clone -b #{ENV["CONTRAIL_BRANCH"]} https://github.com/Juniper/contrail-generateDS.git
 ./contrail-generateDS/generateDS.py -f -o ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-go-api/types -g golang-api vnc_cfg.xsd 2>/dev/null
+mkdir -p ./kubernetes/Godeps/_workspace/src/github.com/rombie/
 ln -sf /root/contrail-kubernetes ./kubernetes/Godeps/_workspace/src/github.com/rombie/contrail-kubernetes
 mkdir -p #{ENV["GOPATH"]}/src/github.com/GoogleCloudPlatform
 ln -sf #{ENV["TARGET"]}/kubernetes #{ENV["GOPATH"]}/src/github.com/GoogleCloudPlatform/kubernetes
