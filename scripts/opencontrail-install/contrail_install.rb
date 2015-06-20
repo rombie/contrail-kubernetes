@@ -175,7 +175,7 @@ def provision_contrail_controller
         sh("service redis-server restart")
     end
     sh("service rabbitmq-server restart")
-    sh("service supervisor-database restart")
+    sh("service supervisor-database restart") if @platform =~ /fedora/
     sh("service supervisor-control restart")
     sh("service supervisor-config restart")
     sh("service supervisor-analytics restart")
