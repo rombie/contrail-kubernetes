@@ -246,7 +246,7 @@ EOF
 
     # Remove ip address from the interface as that is taken over by vhost0
     sh("ifdown #{@intf}; ifup #{@intf}")
-    sh("ip addr flush dev #{@intf}")
+#   sh("ip addr flush dev #{@intf}")
 
     # Restore default route
     sh("ip route add 0.0.0.0/0 via #{gw}", true)
