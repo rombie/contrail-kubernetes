@@ -9,6 +9,7 @@
     "curl",
     "gdebi-core",
     "git",
+    "python-setuptools",
     "software-properties-common",
     "sshpass",
     "strace",
