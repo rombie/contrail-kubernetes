@@ -252,7 +252,7 @@ EOF
     sh("ip route add 0.0.0.0/0 via #{gw}", true, 1, 1, true)
 
     # Setup virtual gateway
-    sh("python #{@utils}/provision_vgw_interface.py --oper create --interface vgw_public --subnets #{@public_net} --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
+    sh("python #{@utils}/provision_vgw_interface.py --oper create --interface vgw_public --subnets #{@public_net} --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public", false, 5, 5)
 
     verify_compute
 end
