@@ -32,6 +32,7 @@ def install_contrail_software_controller
     if !File.file? "nodejs_0.8.15-1contrail1_amd64.deb" then
         sh("wget https://answers.launchpad.net/~syseleven-platform/+archive/ubuntu/contrail-2.0/+build/6635035/+files/nodejs_0.8.15-1contrail1_amd64.deb")
     end
+    sh("dpkg-reconfigure tzdata")
     sh("dpkg -i nodejs_0.8.15-1contrail1_amd64.deb")
     sh("dpkg -i /home/ubuntu/python-kafka-python_0.9.2-0contrail0_all.deb")
     sh("curl -sL http://debian.datastax.com/debian/repo_key|sudo apt-key add -")
