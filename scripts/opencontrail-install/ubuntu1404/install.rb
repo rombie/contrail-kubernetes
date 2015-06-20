@@ -45,6 +45,7 @@ def install_kube_network_manager (kubernetes_branch = "release-0.17",
     ENV["TARGET"]="#{ENV["HOME"]}/contrail"
     ENV["CONTRAIL_BRANCH"]="master"
     ENV["KUBERNETES_BRANCH"]="release-0.17"
+    ENV["GOPATH"]="#{ENV["TARGET"]}/kubernetes/Godeps/_workspace
 
     sh("rm -rf #{ENV["TARGET"]}")
     sh("mkdir -p #{ENV["TARGET"]}")
@@ -56,7 +57,6 @@ wget -q -O - https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | 
 rm -rf /usr/bin/go
 ln -sf /usr/local/go/bin/go /usr/bin/go
 git clone -b #{ENV["KUBERNETES_BRANCH"]} https://github.com/googlecloudplatform/kubernetes
-export GOPATH=#{ENV["TARGET"]}/kubernetes/Godeps/_workspace
 go get github.com/Juniper/contrail-go-api
 wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CONTRAIL_BRANCH"]}/src/schema/vnc_cfg.xsd
 wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CONTRAIL_BRANCH"]}/src/schema/loadbalancer.xsd || true
