@@ -98,6 +98,7 @@ end
 # Install contrail compute software
 def install_contrail_software_compute
     sh("sync; echo 3 > /proc/sys/vm/drop_caches")
+    sh("dpkg -i /home/ubuntu/python-docker-py_0.6.1-dev_all.deb")
     sh("add-apt-repository -y ppa:anantha-l/opencontrail")
     sh("apt-get -y --allow-unauthenticated update")
     sh("apt-get -y --allow-unauthenticated install contrail-vrouter-agent")
