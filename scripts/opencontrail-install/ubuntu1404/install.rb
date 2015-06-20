@@ -55,23 +55,18 @@ apt-get -y --allow-unauthenticated install curl wget software-properties-common 
 wget -q -O - https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | tar -C /usr/local -zx
 rm -rf /usr/bin/go
 ln -sf /usr/local/go/bin/go /usr/bin/go
-
 git clone -b #{ENV["KUBERNETES_BRANCH"]} https://github.com/googlecloudplatform/kubernetes
 export GOPATH=#{ENV["TARGET"]}/kubernetes/Godeps/_workspace
 go get github.com/Juniper/contrail-go-api
-
 wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CONTRAIL_BRANCH"]}/src/schema/vnc_cfg.xsd
 wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CONTRAIL_BRANCH"]}/src/schema/loadbalancer.xsd || true
 git clone -b #{ENV["CONTRAIL_BRANCH"]} https://github.com/Juniper/contrail-generateDS.git
 ./contrail-generateDS/generateDS.py -f -o ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-go-api/types -g golang-api vnc_cfg.xsd 2>/dev/null
-
 git clone -b #{ENV["CONTRAIL_BRANCH"]} https://github.com/Juniper/contrail-kubernetes ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-kubernetes
 mkdir -p #{ENV["GOPATH"]}/src/github.com/GoogleCloudPlatform
 ln -sf #{ENV["TARGET"]}/kubernetes #{ENV["GOPATH"]}/src/github.com/GoogleCloudPlatform/kubernetes
-
 sed -i 's/ClusterIP/PortalIP/' ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-kubernetes/pkg/network/opencontrail/controller.go
 sed -i 's/DeprecatedPublicIPs/PublicIPs/' ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-kubernetes/pkg/network/opencontrail/controller.go
-
 go build github.com/Juniper/contrail-go-api/cli
 go build github.com/Juniper/contrail-kubernetes/pkg/network
 go build github.com/Juniper/contrail-kubernetes/cmd/kube-network-manager
