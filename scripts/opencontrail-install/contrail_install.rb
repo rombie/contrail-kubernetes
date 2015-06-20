@@ -32,8 +32,9 @@ end
 # Find platform OS
 sh(%{\grep -i "ubuntu 14" /etc/issue 2>&1 > /dev/null}, true)
 @platform = $?.to_i == 0 ? "ubuntu1404" : "fedora20"
-
 require "#{@ws}/#{@platform}/install"
+@utils = @platform =~ /fedora/ ?  "/opt/contrail/utils" :
+                                  "/usr/share/contrail-utils"
 
 # Update ssh configuration
 def ssh_setup
@@ -186,13 +187,7 @@ def provision_contrail_controller
     60.times {|i| print "\rWait for #{i}/60 seconds to settle down.. "; sleep 1}
     verify_controller
 
-    if @platform =~ /fedora/ then
-        provision_control = "/opt/contrail/utils/provision_control.py"
-    else
-        provision_control = "/usr/share/contrail-utils/provision_control.py"
-    end
-
-    sh(%{python #{provision_control} --api_server_ip } +
+    sh(%{python #{@utils}/provision_control.py --api_server_ip } +
        %{#{@controller_ip} --api_server_port 8082 --router_asn 64512 } +
        %{--host_name #{@controller_host} --host_ip #{@controller_ip} } +
        %{--oper add })
@@ -231,7 +226,7 @@ EOF
 
     key_file = "/home/#{@user}/.ssh/contrail_rsa"
     key = File.file?(key_file) ? "-i #{key_file}" : ""
-    sh("sshpass -p #{@user} ssh -t #{key} #{@user}@#{@controller_host} sudo python /opt/contrail/utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add", false, 20, 6)
+    sh("sshpass -p #{@user} ssh -t #{key} #{@user}@#{@controller_host} sudo python #{@utils}/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add", false, 20, 6)
     sh("service supervisor-vrouter restart")
     sh("service contrail-vrouter-agent restart")
 
@@ -243,7 +238,7 @@ EOF
     sh("ip route add 0.0.0.0/0 via #{gw}", true)
 
     # Setup virtual gateway
-    sh("python /opt/contrail/utils/provision_vgw_interface.py --oper create --interface vgw_public --subnets #{@public_net} --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
+    sh("python #{@utils}/provision_vgw_interface.py --oper create --interface vgw_public --subnets #{@public_net} --routes 0.0.0.0/0 --vrf default-domain:default-project:Public:Public")
 
     verify_compute
 end
