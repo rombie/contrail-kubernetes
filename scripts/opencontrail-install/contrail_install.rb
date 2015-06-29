@@ -214,20 +214,20 @@ kmod=vrouter
 pname=contrail-vrouter-agent
 LIBDIR=/usr/lib64
 DEVICE=vhost0
-dev=__DEVICE__
+dev=#{@intf}
 vgw_subnet_ip=__VGW_SUBNET_IP__
 vgw_intf=__VGW_INTF_LIST__
 LOGFILE=--log-file=/var/log/contrail/vrouter.log
 EOF
-    File.open("/etc/contrail/agent_param.tmpl", "w") { |fp| fp.puts templ}
+    File.open("/etc/contrail/agent_param", "w") { |fp| fp.puts templ}
 
-    sh("sed 's/__DEVICE__/#{@intf}/' /etc/contrail/agent_param.tmpl > /etc/contrail/agent_param")
-    sh("sed -i 's/# type=kvm/type=kvm/' /etc/contrail/contrail-vrouter-agent.conf")
-    sh("sed -i 's/# name=vhost0/name=vhost0/' /etc/contrail/contrail-vrouter-agent.conf")
-    sh("sed -i 's/# physical_interface=vnet0/physical_interface=#{@intf}/' /etc/contrail/contrail-vrouter-agent.conf")
-    sh("sed -i 's/# server=10.204.217.52/server=#{@contrail_controller}/' /etc/contrail/contrail-vrouter-agent.conf")
-    sh("sed -i 's/# ip=[0-9]\\+\.[0-9]\\+\.[0-9]\\+\.[0-9]\\+\\/[0-9]\\+/ip=#{ip}\\/#{prefix_len}/' /etc/contrail/contrail-vrouter-agent.conf")
-    sh("sed -i 's/# gateway=[0-9]\\+\.[0-9]\\+\.[0-9]\\+\.[0-9]\\+/gateway=#{gw}/' /etc/contrail/contrail-vrouter-agent.conf")
+    sh("/opt/contrail/bin/openstack-config --set /etc/contrail/contrail-vrouter-agent.conf HYPERVISOR type kvm")
+    sh("/opt/contrail/bin/openstack-config --set /etc/contrail/contrail-vrouter-agent.conf DISCOVERY server #{@contrail_controller}")
+    sh("/opt/contrail/bin/openstack-config --set /etc/contrail/contrail-vrouter-agent.conf VIRTUAL-HOST-INTERFACE name vhost0")
+    sh("/opt/contrail/bin/openstack-config --set /etc/contrail/contrail-vrouter-agent.conf VIRTUAL-HOST-INTERFACE ip #{ip}/#{prefix_len}")
+    sh("/opt/contrail/bin/openstack-config --set /etc/contrail/contrail-vrouter-agent.conf VIRTUAL-HOST-INTERFACE gateway #{gw}")
+    sh("/opt/contrail/bin/openstack-config --set /etc/contrail/contrail-vrouter-agent.conf VIRTUAL-HOST-INTERFACE physical_interface #{@intf}")
+    sh("/opt/contrail/bin/openstack-config --del /etc/contrail/contrail-vrouter-agent.conf VIRTUAL-HOST-INTERFACE compute_node_address")
 
     nodemgr_conf = <<EOF
 [DISCOVERY]

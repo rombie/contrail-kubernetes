@@ -30,11 +30,9 @@ end
 
 # Install contrail controller software
 def install_contrail_software_controller
-    if !File.file? "nodejs_0.8.15-1contrail1_amd64.deb" then
-        sh("wget https://answers.launchpad.net/~syseleven-platform/+archive/ubuntu/contrail-2.0/+build/6635035/+files/nodejs_0.8.15-1contrail1_amd64.deb")
-    end
-    sh("dpkg -i nodejs_0.8.15-1contrail1_amd64.deb")
-    sh("dpkg -i /home/ubuntu/python-kafka-python_0.9.2-0contrail0_all.deb")
+    sh("gdebi -n /home/ubuntu/nodejs_0.8.15-1contrail1_amd64.deb"
+    sh("gdebi -n /home/ubuntu/python-kafka-python_0.9.2-0contrail0_all.deb")
+
     sh("curl -sL http://debian.datastax.com/debian/repo_key|sudo apt-key add -")
     sh(%{sh -c 'echo "deb http://debian.datastax.com/community/ stable main" >> /etc/apt/sources.list'})
     sh("add-apt-repository -y ppa:opencontrail/ppa")
@@ -42,6 +40,7 @@ def install_contrail_software_controller
     sh("apt-get -y --allow-unauthenticated update")
     sh("apt-get -y --allow-unauthenticated install contrail-analytics contrail-config contrail-control contrail-web-controller contrail-dns contrail-utils cassandra zookeeperd rabbitmq-server ifmap-server", true)
     sh("apt-get -y --allow-unauthenticated install contrail-analytics contrail-config contrail-control contrail-web-controller contrail-dns contrail-utils cassandra zookeeperd rabbitmq-server ifmap-server")
+    sh("gdebi -n /home/ubuntu/contrail-setup_*.deb")
 
     # Update time-zone
     sh("echo 'America/Los_Angeles' > /etc/timezone")
@@ -102,7 +101,7 @@ end
 # Install third-party software from /cs-shared/builder/cache/ubuntu1404/icehouse
 def install_thirdparty_software_compute
     sh("apt-get -y install #{@common_packages.join(" ")}")
-    sh("dpkg -i /home/ubuntu/python-docker-py_0.6.1-dev_all.deb")
+    sh("gdebi -n /home/ubuntu/python-docker-py_0.6.1-dev_all.deb")
 end
 
 # Install contrail compute software
@@ -112,7 +111,10 @@ def install_contrail_software_compute
     sh("add-apt-repository -y ppa:anantha-l/opencontrail")
     sh("apt-get -y --allow-unauthenticated update")
     sh("apt-get -y --allow-unauthenticated install contrail-vrouter-agent contrail-utils python-contrail-vrouter-api")
-    sh("dpkg --force-all -i /home/ubuntu/contrail-vrouter-init_*.deb")
+
+    # Install contrail-vrouter-init and contrail-setup packages also
+    sh("gdebi -n /home/ubuntu/contrail-vrouter-init_*.deb")
+    sh("gdebi -n /home/ubuntu/contrail-setup_*.deb")
 
     # Update time-zone
     sh("echo 'America/Los_Angeles' > /etc/timezone")
