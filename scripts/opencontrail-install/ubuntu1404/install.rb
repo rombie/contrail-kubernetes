@@ -109,9 +109,9 @@ end
 def install_contrail_software_compute
     sh("sync; echo 3 > /proc/sys/vm/drop_caches")
     sh("add-apt-repository -y ppa:opencontrail/ppa")
-    sh("add-apt-repository -y ppa:anantha-l/opencontrail")
+    sh("add-apt-repository -y ppa:anantha-l/opencontrail-2.20")
     sh("apt-get -y --allow-unauthenticated update")
-    sh("apt-get -y --allow-unauthenticated install contrail-vrouter-agent contrail-vrouter-utils")
+    sh("apt-get -y --allow-unauthenticated install contrail-vrouter-agent contrail-vrouter-utils contrail-utils")
 
     # Install contrail-vrouter-init and contrail-setup packages also
     sh("gdebi -n /home/ubuntu/contrail-vrouter-init_*.deb")
