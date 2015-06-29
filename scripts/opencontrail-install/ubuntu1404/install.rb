@@ -48,10 +48,10 @@ def install_contrail_software_controller
 end
 
 def install_kube_network_manager (kubernetes_branch = "release-0.17",
-                                  contrail_branch = "master")
+                                  contrail_branch = "R2.20")
     ENV["TARGET"]="#{ENV["HOME"]}/contrail"
-    ENV["CONTRAIL_BRANCH"]="master"
-    ENV["KUBERNETES_BRANCH"]="release-0.17"
+    ENV["CONTRAIL_BRANCH"]=contrail_branch
+    ENV["KUBERNETES_BRANCH"]=kubernetes_branch
     ENV["GOPATH"]="#{ENV["TARGET"]}/kubernetes/Godeps/_workspace"
 
     sh("rm -rf #{ENV["TARGET"]}")
