@@ -36,7 +36,7 @@ def install_contrail_software_controller
     sh("curl -sL http://debian.datastax.com/debian/repo_key|sudo apt-key add -")
     sh(%{sh -c 'echo "deb http://debian.datastax.com/community/ stable main" >> /etc/apt/sources.list'})
     sh("add-apt-repository -y ppa:opencontrail/ppa")
-    sh("add-apt-repository -y ppa:anantha-l/opencontrail")
+    sh("add-apt-repository -y ppa:anantha-l/opencontrail-2.20")
     sh("apt-get -y --allow-unauthenticated update")
     sh("apt-get -y --allow-unauthenticated install contrail-analytics contrail-config contrail-control contrail-web-controller contrail-dns contrail-utils cassandra zookeeperd rabbitmq-server ifmap-server", true)
     sh("apt-get -y --allow-unauthenticated install contrail-analytics contrail-config contrail-control contrail-web-controller contrail-dns contrail-utils cassandra zookeeperd rabbitmq-server ifmap-server")
