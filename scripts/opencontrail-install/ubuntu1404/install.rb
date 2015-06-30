@@ -120,6 +120,4 @@ def install_contrail_software_compute
     # Update time-zone
     sh("echo 'America/Los_Angeles' > /etc/timezone")
     sh("dpkg-reconfigure -f noninteractive tzdata")
-#   sh("sync; echo 3 > /proc/sys/vm/drop_caches")
-#   sh("modprobe vrouter")
 end
