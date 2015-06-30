@@ -47,7 +47,6 @@ end
 
 def install_kube_network_manager (kubernetes_branch = "release-0.17",
                                   contrail_branch = "master")
-                                 )
     ENV["TARGET"]="#{ENV["HOME"]}/contrail"
     ENV["CONTRAIL_BRANCH"]=contrail_branch
     ENV["KUBERNETES_BRANCH"]=kubernetes_branch
