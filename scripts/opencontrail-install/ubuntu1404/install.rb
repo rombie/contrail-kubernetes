@@ -110,8 +110,8 @@ def install_contrail_software_compute
     sh("apt-get -y --allow-unauthenticated install contrail-vrouter-agent contrail-vrouter-utils contrail-utils python-contrail-vrouter-api")
 
     # Install contrail-vrouter-init and contrail-setup packages also
-    sh("gdebi -n /home/ubuntu/contrail-vrouter-init_*.deb")
-    sh("gdebi -n /home/ubuntu/contrail-setup_*.deb")
+    sh("gdebi -n contrail-vrouter-init_*.deb")
+    sh("gdebi -n contrail-setup_*.deb")
 
     # Update time-zone
     sh("echo 'America/Los_Angeles' > /etc/timezone")
