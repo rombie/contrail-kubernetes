@@ -38,7 +38,7 @@ def install_contrail_software_controller
     sh("apt-get -y --allow-unauthenticated update")
     sh("apt-get -y --allow-unauthenticated install contrail-analytics contrail-config contrail-control contrail-web-controller contrail-dns contrail-utils cassandra zookeeperd rabbitmq-server ifmap-server", true)
     sh("apt-get -y --allow-unauthenticated install contrail-analytics contrail-config contrail-control contrail-web-controller contrail-dns contrail-utils cassandra zookeeperd rabbitmq-server ifmap-server")
-    sh("gdebi -n /home/ubuntu/contrail-setup_*.deb")
+    sh("gdebi -n contrail-setup_*.deb")
 
     # Update time-zone
     sh("echo 'America/Los_Angeles' > /etc/timezone")
