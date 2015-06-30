@@ -1,11 +1,8 @@
 #!/usr/bin/env ruby
 
-@branch = "3.0" # master
-@tag = "4100"
-@pkg_tag = "#{@branch}-#{@tag}"
+@version = "2.20" # master
 
 @common_packages = [
-#   "docker",
     "curl",
     "gdebi-core",
     "git",
@@ -19,8 +16,9 @@
     "wget",
 ]
 
-# Download and extract contrail and thirdparty rpms
+# Download and extract contrail software which are missing in ppa
 def download_contrail_software
+    sh("wget -qO - https://github.com/rombie/opencontrail-packages/raw/R#{@version}/ubuntu1404/contrail.tar.xz | tar Jx", false, 5)
 end
 
 # Install from /cs-shared/builder/cache/centoslinux70/icehouse
@@ -32,12 +30,11 @@ end
 def install_contrail_software_controller
     sh("wget -q -O -  https://launchpad.net/~opencontrail/+archive/ubuntu/ppa/+files/nodejs_0.8.15-1contrail1_amd64.deb > nodejs_0.8.15-1contrail1_amd64.deb")
     sh("gdebi -n nodejs_0.8.15-1contrail1_amd64.deb")
-#   sh("gdebi -n /home/ubuntu/python-kafka-python_0.9.2-0contrail0_all.deb")
 
     sh("curl -sL http://debian.datastax.com/debian/repo_key|sudo apt-key add -")
     sh(%{sh -c 'echo "deb http://debian.datastax.com/community/ stable main" >> /etc/apt/sources.list'})
     sh("add-apt-repository -y ppa:opencontrail/ppa")
-    sh("add-apt-repository -y ppa:anantha-l/opencontrail-2.20")
+    sh("add-apt-repository -y ppa:anantha-l/opencontrail-#{@version}")
     sh("apt-get -y --allow-unauthenticated update")
     sh("apt-get -y --allow-unauthenticated install contrail-analytics contrail-config contrail-control contrail-web-controller contrail-dns contrail-utils cassandra zookeeperd rabbitmq-server ifmap-server", true)
     sh("apt-get -y --allow-unauthenticated install contrail-analytics contrail-config contrail-control contrail-web-controller contrail-dns contrail-utils cassandra zookeeperd rabbitmq-server ifmap-server")
@@ -49,7 +46,7 @@ def install_contrail_software_controller
 end
 
 def install_kube_network_manager (kubernetes_branch = "release-0.17",
-                                  contrail_branch = "master" #"R2.20")
+                                  contrail_branch = "master")
                                  )
     ENV["TARGET"]="#{ENV["HOME"]}/contrail"
     ENV["CONTRAIL_BRANCH"]=contrail_branch
@@ -103,14 +100,13 @@ end
 # Install third-party software from /cs-shared/builder/cache/ubuntu1404/icehouse
 def install_thirdparty_software_compute
     sh("apt-get -y install #{@common_packages.join(" ")}")
-#   sh("gdebi -n /home/ubuntu/python-docker-py_0.6.1-dev_all.deb")
 end
 
 # Install contrail compute software
 def install_contrail_software_compute
     sh("sync; echo 3 > /proc/sys/vm/drop_caches")
     sh("add-apt-repository -y ppa:opencontrail/ppa")
-    sh("add-apt-repository -y ppa:anantha-l/opencontrail-2.20")
+    sh("add-apt-repository -y ppa:anantha-l/opencontrail-#{@version}")
     sh("apt-get -y --allow-unauthenticated update")
     sh("apt-get -y --allow-unauthenticated install contrail-vrouter-agent contrail-vrouter-utils contrail-utils python-contrail-vrouter-api")
 
