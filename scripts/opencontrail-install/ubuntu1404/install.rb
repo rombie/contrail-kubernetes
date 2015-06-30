@@ -30,7 +30,8 @@ end
 
 # Install contrail controller software
 def install_contrail_software_controller
-#   sh("gdebi -n /home/ubuntu/nodejs_0.8.15-1contrail1_amd64.deb")
+    sh("wget -q -O -  https://launchpad.net/~opencontrail/+archive/ubuntu/ppa/+files/nodejs_0.8.15-1contrail1_amd64.deb > nodejs_0.8.15-1contrail1_amd64.deb")
+    sh("gdebi -n nodejs_0.8.15-1contrail1_amd64.deb")
 #   sh("gdebi -n /home/ubuntu/python-kafka-python_0.9.2-0contrail0_all.deb")
 
     sh("curl -sL http://debian.datastax.com/debian/repo_key|sudo apt-key add -")
