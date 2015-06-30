@@ -30,8 +30,8 @@ end
 
 # Install contrail controller software
 def install_contrail_software_controller
-    sh("gdebi -n /home/ubuntu/nodejs_0.8.15-1contrail1_amd64.deb")
-    sh("gdebi -n /home/ubuntu/python-kafka-python_0.9.2-0contrail0_all.deb")
+#   sh("gdebi -n /home/ubuntu/nodejs_0.8.15-1contrail1_amd64.deb")
+#   sh("gdebi -n /home/ubuntu/python-kafka-python_0.9.2-0contrail0_all.deb")
 
     sh("curl -sL http://debian.datastax.com/debian/repo_key|sudo apt-key add -")
     sh(%{sh -c 'echo "deb http://debian.datastax.com/community/ stable main" >> /etc/apt/sources.list'})
@@ -102,7 +102,7 @@ end
 # Install third-party software from /cs-shared/builder/cache/ubuntu1404/icehouse
 def install_thirdparty_software_compute
     sh("apt-get -y install #{@common_packages.join(" ")}")
-    sh("gdebi -n /home/ubuntu/python-docker-py_0.6.1-dev_all.deb")
+#   sh("gdebi -n /home/ubuntu/python-docker-py_0.6.1-dev_all.deb")
 end
 
 # Install contrail compute software
