@@ -241,6 +241,7 @@ EOF
     key_file = "/home/#{@user}/.ssh/contrail_rsa"
     key = File.file?(key_file) ? "-i #{key_file}" : ""
     sh("sshpass -p #{@user} ssh -t #{key} #{@user}@#{@controller_host} sudo python #{@utils}/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@contrail_controller} --oper add", false, 20, 6)
+    sh("sync; echo 3 > /proc/sys/vm/drop_caches") if @platform =~ /ubuntu/
     sh("service supervisor-vrouter restart")
     sh("service contrail-vrouter-agent restart")
 
