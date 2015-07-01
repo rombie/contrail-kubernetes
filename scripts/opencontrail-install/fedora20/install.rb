@@ -99,7 +99,12 @@
 
 # Download and extract contrail and thirdparty rpms
 def download_contrail_software
-    sh("wget -qO - https://github.com/rombie/opencontrail-packages/raw/R#{@version}/fedora20/contrail.tar.xz | tar Jx", false, 5)
+    file = "#{ENV['HOME']}/contrail.tar.xz"
+    if File.file? file
+        sh("cat #{file} | tar Jx", false, 5)
+    else
+        sh("wget -qO - https://github.com/rombie/opencontrail-packages/raw/R#{@version}/fedora20/contrail.tar.xz | tar Jx", false, 5)
+    end
     sh("wget -qO - https://github.com/rombie/opencontrail-packages/raw/R#{@version}/fedora20/thirdparty.tar.xz | tar Jx", false, 5)
     sh("wget -qO - https://github.com/rombie/opencontrail-packages/raw/R#{@version}/fedora20/kubernetes.tar.xz | tar Jx", false, 5)
 end
