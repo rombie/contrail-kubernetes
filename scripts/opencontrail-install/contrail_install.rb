@@ -159,6 +159,9 @@ def provision_contrail_controller
         sh(%{sed -i 's/Xss180k/Xss280k/' /etc/cassandra/conf/cassandra-env.sh})
     end
 
+    # Reduce analytics cassandra db ttl
+    sh(%{/opt/contrail/bin/openstack-config --set /etc/contrail/contrail-collector.conf DEFAULT analytics_data_ttl 1})
+
     # Fix webui config
     if !File.file? "/usr/bin/node" then
         sh("ln -sf /usr/bin/nodejs /usr/bin/node", true)
