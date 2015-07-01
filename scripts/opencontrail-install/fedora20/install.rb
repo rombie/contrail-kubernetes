@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-@branch = "3.0" # master
-@tag = "4100"
-@pkg_tag = "#{@branch}-#{@tag}"
+@version = "2.20" # master
+@tag = "64" # 4100
+@pkg_tag = "#{@version}-#{@tag}"
 
 @common_packages = [
     "createrepo",
@@ -99,9 +99,9 @@
 
 # Download and extract contrail and thirdparty rpms
 def download_contrail_software
-    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/contrail.tar.xz?raw=true | tar Jx", false, 5)
-    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/thirdparty.tar.xz?raw=true | tar Jx", false, 5)
-    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/kubernetes.tar.xz?raw=true | tar Jx")
+    sh("wget -qO - https://github.com/rombie/opencontrail-packages/raw/R#{@version}/fedora20/contrail.tar.xz | tar Jx", false, 5)
+    sh("wget -qO - https://github.com/rombie/opencontrail-packages/raw/R#{@version}/fedora20/thirdparty.tar.xz | tar Jx", false, 5)
+    sh("wget -qO - https://github.com/rombie/opencontrail-packages/raw/R#{@version}/fedora20/kubernetes.tar.xz | tar Jx", false, 5)
 end
 
 # Install from /cs-shared/builder/cache/centoslinux70/juno
@@ -117,7 +117,7 @@ def install_contrail_software_controller
     # Install node-v0.8.15
     # sh("wget -O - http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz | tar xz")
     # sh("cd node && ./configure && make all install")
-    sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/contrail_web_core.tar.xz?raw=true | tar -C /usr/src/contrail/ -Jx")
+#   sh("wget -qO - https://github.com/rombie/opencontrail-packages/blob/master/fedora20/contrail_web_core.tar.xz?raw=true | tar -C /usr/src/contrail/ -Jx")
 
     sh("rpm2cpio #{@ws}/contrail/controller/build/package-build/RPMS/noarch/contrail-openstack-database-#{@pkg_tag}.fc20.noarch.rpm | cpio -idmv")
     sh("cp etc/rc.d/init.d/zookeeper /etc/rc.d/init.d/")
