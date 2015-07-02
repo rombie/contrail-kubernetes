@@ -216,11 +216,16 @@ def provision_contrail_compute
     ip, mask, gw, prefix_len = get_intf_ip(@intf)
     create_vhost_interface(ip, mask, gw)
 
+    if @platform =~ /fedora/ then
+        ko = sh("find /usr/lib/modules/#{`uname -r`.chomp}/extra/net -name vrouter.ko")
+    else
+        ko="vrouter"
+    end
     templ=<<EOF
 LOG=/var/log/contrail.log
-CONFIG=/etc/contrail/agent.conf
+CONFIG=/etc/contrail/contrail-vrouter-agent.conf
 prog=/usr/bin/contrail-vrouter-agent
-kmod=vrouter
+kmod=#{ko}
 pname=contrail-vrouter-agent
 LIBDIR=/usr/lib64
 DEVICE=vhost0
@@ -228,8 +233,10 @@ dev=#{@intf}
 vgw_subnet_ip=__VGW_SUBNET_IP__
 vgw_intf=__VGW_INTF_LIST__
 LOGFILE=--log-file=/var/log/contrail/vrouter.log
+VHOST_CFG=/etc/sysconfig/network-scripts/ifcfg-vhost0
 EOF
     File.open("/etc/contrail/agent_param", "w") { |fp| fp.puts templ}
+    sh("touch /etc/contrail/default_pmac")
 
     sh("/opt/contrail/bin/openstack-config --set /etc/contrail/contrail-vrouter-agent.conf HYPERVISOR type kvm")
     sh("/opt/contrail/bin/openstack-config --set /etc/contrail/contrail-vrouter-agent.conf DISCOVERY server #{@contrail_controller}")
