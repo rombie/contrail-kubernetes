@@ -9,6 +9,7 @@
 #   "docker",
     "git",
     "logrotate",
+    "patch",
     "sshpass",
     "strace",
     "tcpdump",

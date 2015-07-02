@@ -186,8 +186,11 @@ def provision_contrail_controller
     sh("service supervisor-config restart")
     sh("service supervisor-analytics restart")
 
-    sh("service supervisor-webui restart", true)
-    sh("restart contrail-webui-webserver", true) if @platform =~ /ubuntu
+    if @platform =~ /ubuntu/
+        sh("restart contrail-webui-webserver", true)
+    else
+        sh("service supervisor-webui restart", true)
+    end
 
     60.times {|i| print "\rWait for #{i}/60 seconds to settle down.. "; sleep 1}
     verify_controller
