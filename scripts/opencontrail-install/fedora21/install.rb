@@ -156,7 +156,3 @@ end
 def install_contrail_software_compute
     sh("yum -y install #{@compute_contrail_packages.join(" ")}", true)
 end
-
-def install_kube_network_manager (kubernetes_branch = "release-0.17",
-                                  contrail_branch = "master")
-end

@@ -283,8 +283,10 @@ def provision_contrail_controller_kubernetes
     sh("ln -sf /usr/local/bin/kubectl /usr/bin/kubectl", true)
     sh("nohup /usr/local/bin/kubectl proxy --www=#{@ws}/build_kubernetes/www 2>&1 > /var/log/kubectl-web-proxy.log", true, 1, 1, true)
 
+    target = @platform =~ /fedora/ ? "/root" : "/home/ubuntu"
+
     # Start kube-network-manager plugin daemon in background
-    sh(%{nohup /home/ubuntu/contrail/kube-network-manager -- --public_net="#{@public_net}" --portal_net="#{@portal_net}" --private_net="#{@private_net}" 2>&1 > /var/log/contrail/kube-network-manager.log}, true, 1, 1, true)
+    sh(%{nohup #{target}/contrail/kube-network-manager -- --public_net="#{@public_net}" --portal_net="#{@portal_net}" --private_net="#{@private_net}" 2>&1 > /var/log/contrail/kube-network-manager.log}, true, 1, 1, true)
 
     # Add public_net route in vagrant setup.
     sh(%{ip route add #{@public_net} via `grep kubernetes-minion-1 /etc/hosts | awk '{print $1}'`}, true) if @vagrant
@@ -352,6 +354,41 @@ end
 def aws_setup
     # Update /etc/hosts
     # Allow password based login in ssh
+end
+
+def install_kube_network_manager (kubernetes_branch = "release-0.17",
+                                  contrail_branch = "master")
+    ENV["TARGET"]="#{ENV["HOME"]}/contrail"
+    ENV["CONTRAIL_BRANCH"]=contrail_branch
+    ENV["KUBERNETES_BRANCH"]=kubernetes_branch
+    ENV["GOPATH"]="#{ENV["TARGET"]}/kubernetes/Godeps/_workspace"
+    target = @platform =~ /fedora/ ? "/root" : "/home/ubuntu"
+
+    sh("rm -rf #{ENV["TARGET"]}")
+    sh("mkdir -p #{ENV["TARGET"]}")
+    Dir.chdir(ENV["TARGET"])
+
+    commands=<<EOF
+wget -q -O - https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | tar -C /usr/local -zx
+rm -rf /usr/bin/go
+ln -sf /usr/local/go/bin/go /usr/bin/go
+git clone -b #{ENV["KUBERNETES_BRANCH"]} https://github.com/googlecloudplatform/kubernetes
+go get github.com/Juniper/contrail-go-api
+wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CONTRAIL_BRANCH"]}/src/schema/vnc_cfg.xsd
+wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CONTRAIL_BRANCH"]}/src/schema/loadbalancer.xsd || true
+git clone -b #{ENV["CONTRAIL_BRANCH"]} https://github.com/Juniper/contrail-generateDS.git
+./contrail-generateDS/generateDS.py -f -o ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-go-api/types -g golang-api vnc_cfg.xsd 2>/dev/null
+mkdir -p ./kubernetes/Godeps/_workspace/src/github.com/Juniper/
+ln -sf #{target}/contrail-kubernetes ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-kubernetes
+mkdir -p #{ENV["GOPATH"]}/src/github.com/GoogleCloudPlatform
+ln -sf #{ENV["TARGET"]}/kubernetes #{ENV["GOPATH"]}/src/github.com/GoogleCloudPlatform/kubernetes
+sed -i 's/ClusterIP/PortalIP/' ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-kubernetes/pkg/network/opencontrail/controller.go
+sed -i 's/DeprecatedPublicIPs/PublicIPs/' ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-kubernetes/pkg/network/opencontrail/controller.go
+go build github.com/Juniper/contrail-go-api/cli
+go build github.com/Juniper/contrail-kubernetes/pkg/network
+go build github.com/Juniper/contrail-kubernetes/cmd/kube-network-manager
+EOF
+    commands.split(/\n/).each { |cmd| sh(cmd) }
 end
 
 def main
