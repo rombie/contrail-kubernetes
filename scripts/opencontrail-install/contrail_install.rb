@@ -286,7 +286,7 @@ def provision_contrail_controller_kubernetes
     target = @platform =~ /fedora/ ? "/root" : "/home/ubuntu"
 
     # Start kube-network-manager plugin daemon in background
-    sh(%{nohup #{target}/contrail/kube-network-manager -- --public_net="#{@public_net}" --portal_net="#{@portal_net}" --private_net="#{@private_net}" 2>&1 > /var/log/contrail/kube-network-manager.log}, true, 1, 1, true)
+    sh(%{nohup #{target}/contrail/kube-network-manager -- --public_net="#{@public_net}" --portal_net="#{@portal_net}" --private_net="#{@private_net}" 2>&1 > /var/log/contrail/kube-network-manager.log}, true, 1, 1, true) if @platform =~ /ubuntu/
 
     # Add public_net route in vagrant setup.
     sh(%{ip route add #{@public_net} via `grep kubernetes-minion-1 /etc/hosts | awk '{print $1}'`}, true) if @vagrant
