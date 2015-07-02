@@ -141,6 +141,8 @@ end
 # Provision contrail-controller
 def provision_contrail_controller
     update_controller_etc_hosts
+    sh("ln -sf /bin/openstack-config /opt/contrail/bin/openstack-config") \
+        if @platform =~ /fedora/
 
     if @platform =~ /fedora/ then
         sh(%{sed -i 's/Xss180k/Xss280k/' /etc/cassandra/conf/cassandra-env.sh})
@@ -206,6 +208,8 @@ end
 
 # Provision contrail-vrouter agent and vrouter kernel module
 def provision_contrail_compute
+    sh("ln -sf /bin/openstack-config /opt/contrail/bin/openstack-config") \
+        if @platform =~ /fedora/
     ip, mask, gw, prefix_len = get_intf_ip(@intf)
     create_vhost_interface(ip, mask, gw)
 
