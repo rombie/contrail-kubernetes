@@ -125,7 +125,7 @@ def fix_nodemgr_config_files
 server_list=127.0.0.1:8086
 EOF
     File.open("/etc/contrail/contrail-control-nodemgr.conf", "a") { |fp|
-        fp.puts nodemgr_con
+        fp.puts nodemgr_conf
     }
     File.open("/etc/contrail/contrail-database-nodemgr.conf", "a") { |fp|
         fp.puts nodemgr_conf
