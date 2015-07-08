@@ -443,12 +443,12 @@ rm -rf /usr/bin/go
 ln -sf /usr/local/go/bin/go /usr/bin/go
 git clone -b #{ENV["KUBERNETES_BRANCH"]} https://github.com/googlecloudplatform/kubernetes
 go get github.com/Juniper/contrail-go-api
-go get github.com/Juniper/contrail-kubernetes
 wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CONTRAIL_BRANCH"]}/src/schema/vnc_cfg.xsd
 wget -q https://raw.githubusercontent.com/Juniper/contrail-controller/#{ENV["CONTRAIL_BRANCH"]}/src/schema/loadbalancer.xsd || true
 git clone -b #{ENV["CONTRAIL_BRANCH"]} https://github.com/Juniper/contrail-generateDS.git
 ./contrail-generateDS/generateDS.py -f -o $GOPATH/src/github.com/Juniper/contrail-go-api/types -g golang-api vnc_cfg.xsd 2>/dev/null
-go build github.com/Juniper/contrail-go-api/cli
+ln -sf #{target}/contrail-kubernetes ./kubernetes/Godeps/_workspace/src/github.com/Juniper/contrail-kubernetes
+ln -sf #{ENV["TARGET"]}/kubernetes #{ENV["GOPATH"]}/src/github.com/GoogleCloudPlatform/kubernetes
 go build github.com/Juniper/contrail-kubernetes/cmd/kube-network-manager
 EOF
     commands.split(/\n/).each { |cmd| sh(cmd) }
