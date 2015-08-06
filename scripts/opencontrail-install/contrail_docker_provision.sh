@@ -23,6 +23,12 @@ function no_verify() {
     netstat -anp | \grep LISTEN | \grep -w 8070 # WebUI
 }
 
+function provision_vrouter() {
+    docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " mkdir -p /usr/share/contrail-utils/"}' | sh
+    docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " curl -s https://raw.githubusercontent.com/Juniper/contrail-controller/R2.20/src/config/utils/provision_vrouter.py -o /usr/share/contrail-utils/provision_vrouter.py"}' | sh
+    docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " python /usr/share/contrail-utils/provision_vrouter.py --host_name ip-172-20-0-106 --host_ip 172.20.0.106 --api_server_ip 172.20.0.9 --oper add"}' | sh
+}
+
 function provision_bgp() {
     docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " curl -s https://raw.githubusercontent.com/Juniper/contrail-controller/R2.20/src/config/utils/provision_control.py -o /tmp/provision_control.py"}' | sh
     docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " curl -s https://raw.githubusercontent.com/Juniper/contrail-controller/R2.20/src/config/utils/provision_bgp.py -o /tmp/provision_bgp.py"}' | sh

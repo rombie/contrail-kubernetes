@@ -316,6 +316,20 @@ def verify_compute
     sh("ping -c 3 github.com")
 end
 
+def provision_vrouter (ip)
+    key = File.file?(@opt.ssh_key) ? "-i #{@opt.ssh_key}" : ""
+
+    cmds = [
+        %{docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " mkdir -p /usr/share/contrail-utils/"}' | sh},
+        %{docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " curl -s https://raw.githubusercontent.com/Juniper/contrail-controller/R2.20/src/config/utils/provision_vrouter.py -o /usr/share/contrail-utils/provision_vrouter.py"}' | sh}
+        %{docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " python /usr/share/contrail-utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@opt.controller_ip} --oper add"}' | sh}
+    ]
+
+    cmds.each { |cmd|
+        sh(%{sshpass -p #{@opt.password} ssh -t #{key} #{@opt.user}@#{@opt.controller_host} sudo #{cmd}})0
+    }
+end
+
 # Provision contrail-vrouter agent and vrouter kernel module
 def provision_contrail_compute
     sh("ln -sf /bin/openstack-config /opt/contrail/bin/openstack-config") \
