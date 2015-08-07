@@ -1,0 +1,12 @@
+md5=2193a46160758f71c933c46c880125b5  cassandra.manifest
+md5=cf18f795f064bb6cb2f4eece99366c57  contrail-api.manifest
+md5=68bf9f9caae2ab25fd3ab1e8b76e4efe  contrail-collector.manifest
+md5=c79f7a22a2b29421d44f5864c104db14  contrail-control.manifest
+md5=337ed96c330e5a193044eea896103132  contrail-discovery.manifest
+md5=d2a3ca9fb5b879aec36a4cef5c283a56  contrail-analytics-api.manifest
+md5=4f34777fa04576a50bf4899d53f04683  contrail-schema.manifest
+md5=f27327ed74c803a53809aad5e26cbc45  ifmap-server.manifest
+md5=d90ebcb37f2c5a308317642439f07e10  kube-network-manager.manifest
+md5=fe26b2f66c2adfd94c85c1971be50267  rabbitmq.manifest
+md5=c665836b3d5fe7b535d2c91a5efbb824  zookeeper.manifest
+
