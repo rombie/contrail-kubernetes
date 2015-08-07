@@ -6,7 +6,8 @@ function verify_contrail_listen_services() {
     netstat -anp | \grep LISTEN | \grep -w 5672 # RabbitMQ
     netstat -anp | \grep LISTEN | \grep -w 2181 # ZooKeeper
     netstat -anp | \grep LISTEN | \grep -w 9160 # Cassandra
-    netstat -anp | \grep LISTEN | \grep -w 8083 # Control-Node
+    netstat -anp | \grep LISTEN | \grep -w 5269 # XMPP Server
+    netstat -anp | \grep LISTEN | \grep -w 8083 # Control-Node Introspect
     netstat -anp | \grep LISTEN | \grep -w 8443 # IFMAP
     netstat -anp | \grep LISTEN | \grep -w 8082 # API-Server
     netstat -anp | \grep LISTEN | \grep -w 8087 # Schema
