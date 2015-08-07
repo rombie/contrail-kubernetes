@@ -25,6 +25,7 @@ def parse_options
     @opt.ssh_key = "/home/#{@opt.user}/.ssh/contrail_rsa"
     @opt.contrail_install = true
     @opt.provision_vgw = false
+    @opt.provision_vrouter = true
     @opt.wait_for_kube_api = false
     @opt.kubernetes_branch = "v0.20.1"
     @opt.cassandra_db_path = "/var/lib/cassandra"
@@ -59,6 +60,10 @@ def parse_options
         o.on("-g", "--[no-]provision-vgw", "#{@opt.provision_vgw}",
              "Provision vgw interface") { |f|
              @opt.provision_vgw = f
+        }
+        o.on("--[no-]provision-vrouter", "#{@opt.provision_vgw}",
+             "Provision vrouter") { |f|
+             @opt.provision_vrouter = f
         }
         o.on("-i", "--controller-ip #{@opt.controller_ip}",
              "IP of the contrail controller host") { |ip|
@@ -378,7 +383,7 @@ EOF
     File.open("/etc/contrail/contrail-vrouter-nodemgr.conf", "w") {|fp| fp.puts nodemgr_conf}
 
     key = File.file?(@opt.ssh_key) ? "-i #{@opt.ssh_key}" : ""
-    sh("sshpass -p #{@opt.password} ssh -t #{key} #{@opt.user}@#{@opt.controller_host} sudo python #{@utils}/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@opt.controller_ip} --oper add", false, 20, 6)
+    sh("sshpass -p #{@opt.password} ssh -t #{key} #{@opt.user}@#{@opt.controller_host} sudo python #{@utils}/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@opt.controller_ip} --oper add", false, 20, 6) if @opt.provision_vrouter
     sh("sync; echo 3 > /proc/sys/vm/drop_caches") if @platform =~ /ubuntu/
     sh("service supervisor-vrouter restart")
     sh("service contrail-vrouter-agent restart")
