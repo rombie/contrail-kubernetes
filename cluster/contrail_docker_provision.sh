@@ -20,6 +20,7 @@ function verify_contrail_listen_services() {
 }
 
 function no_verify() {
+    netstat -anp | \grep LISTEN | \grep -w 8091 # query-engine
     netstat -anp | \grep LISTEN | \grep -w 8094 # DNS
     netstat -anp | \grep LISTEN | \grep -w 53   # named
 }
