@@ -332,7 +332,7 @@ def provision_vrouter (ip)
     ]
 
     cmds.each { |cmd|
-        sh(%{sshpass -p #{@opt.password} ssh -t #{key} #{@opt.user}@#{@opt.controller_host} sudo #{cmd}})0
+        sh(%{sshpass -p #{@opt.password} ssh -t #{key} #{@opt.user}@#{@opt.controller_host} sudo #{cmd}})
     }
 end
 
