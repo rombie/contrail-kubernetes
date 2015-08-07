@@ -1,5 +1,5 @@
 cassandra.manifest              md5=2193a46160758f71c933c46c880125b5
-contrail-api.manifest           md5=cf18f795f064bb6cb2f4eece99366c57
+contrail-api.manifest           md5=192ebd8b309a2b70fd80d201c700c2ca
 contrail-collector.manifest     md5=68bf9f9caae2ab25fd3ab1e8b76e4efe
 contrail-control.manifest       md5=c79f7a22a2b29421d44f5864c104db14
 contrail-discovery.manifest     md5=55bb8bd7e13f9b64c24c018f7fd54af5
