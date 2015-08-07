@@ -327,7 +327,7 @@ def provision_vrouter (ip)
 
     cmds = [
         %{docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " mkdir -p /usr/share/contrail-utils/"}' | sh},
-        %{docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " curl -s https://raw.githubusercontent.com/Juniper/contrail-controller/R2.20/src/config/utils/provision_vrouter.py -o /usr/share/contrail-utils/provision_vrouter.py"}' | sh}
+        %{docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " curl -s https://raw.githubusercontent.com/Juniper/contrail-controller/R2.20/src/config/utils/provision_vrouter.py -o /usr/share/contrail-utils/provision_vrouter.py"}' | sh},
         %{docker ps |\grep contrail-api |\grep -v pause | awk '{print "docker exec " $1 " python /usr/share/contrail-utils/provision_vrouter.py --host_name #{sh('hostname')} --host_ip #{ip} --api_server_ip #{@opt.controller_ip} --oper add"}' | sh}
     ]
 
