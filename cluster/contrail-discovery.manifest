@@ -7,7 +7,7 @@
         "containers":[{
             "name": "contrail-disc",
             "image": "opencontrail/config:2.20",
-            "command": ["/bin/sh", "-c", "/usr/bin/contrail-discovery --conf_file=/etc/contrail/contrail-discovery.conf --http_server_port 5998 --cassandra_server_list=127.0.0.1:9160 --reset_config 1>>/var/log/contrail/contrail-discovery.stdout 2>>/var/log/contrail/contrail-discovery.err"],
+            "command": ["/bin/sh", "-c", "/usr/bin/contrail-discovery --conf_file=/etc/contrail/contrail-discovery.conf --cassandra_server_list=127.0.0.1:9160 --reset_config 1>>/var/log/contrail/contrail-discovery.stdout 2>>/var/log/contrail/contrail-discovery.err"],
             "ports": [{
                 "name": "contrail-disc",
                 "containerPort": 5998,

@@ -6,16 +6,16 @@ function verify_contrail_listen_services() {
     netstat -anp | \grep LISTEN | \grep -w 5672 # RabbitMQ
     netstat -anp | \grep LISTEN | \grep -w 2181 # ZooKeeper
     netstat -anp | \grep LISTEN | \grep -w 9160 # Cassandra
-    netstat -anp | \grep LISTEN | \grep -w 8083  # Control-Node
+    netstat -anp | \grep LISTEN | \grep -w 8083 # Control-Node
     netstat -anp | \grep LISTEN | \grep -w 8443 # IFMAP
     netstat -anp | \grep LISTEN | \grep -w 8082 # API-Server
     netstat -anp | \grep LISTEN | \grep -w 8087 # Schema
+    netstat -anp | \grep LISTEN | \grep -w 5998 # discovery
+    netstat -anp | \grep LISTEN | \grep -w 8086 # Collector
 }
 
 function no_verify() {
-    netstat -anp | \grep LISTEN | \grep -w 5998 # discovery
     netstat -anp | \grep LISTEN | \grep -w 6379 # redis
-    netstat -anp | \grep LISTEN | \grep -w 8086 # Collector
     netstat -anp | \grep LISTEN | \grep -w 8081 # OpServer
     netstat -anp | \grep LISTEN | \grep -w 8094 # DNS
     netstat -anp | \grep LISTEN | \grep -w 53   # named
