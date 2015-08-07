@@ -12,15 +12,15 @@ function verify_contrail_listen_services() {
     netstat -anp | \grep LISTEN | \grep -w 8087 # Schema
     netstat -anp | \grep LISTEN | \grep -w 5998 # discovery
     netstat -anp | \grep LISTEN | \grep -w 8086 # Collector
+    netstat -anp | \grep LISTEN | \grep -w 8081 # OpServer
+    netstat -anp | \grep LISTEN | \grep -w 6379 # redis
+    netstat -anp | \grep LISTEN | \grep -w 8143 # WebUI
+    netstat -anp | \grep LISTEN | \grep -w 8070 # WebUI
 }
 
 function no_verify() {
-    netstat -anp | \grep LISTEN | \grep -w 6379 # redis
-    netstat -anp | \grep LISTEN | \grep -w 8081 # OpServer
     netstat -anp | \grep LISTEN | \grep -w 8094 # DNS
     netstat -anp | \grep LISTEN | \grep -w 53   # named
-    netstat -anp | \grep LISTEN | \grep -w 8143 # WebUI
-    netstat -anp | \grep LISTEN | \grep -w 8070 # WebUI
 }
 
 function provision_vrouter() {

@@ -5,8 +5,10 @@ contrail-control.manifest       md5=c79f7a22a2b29421d44f5864c104db14
 contrail-discovery.manifest     md5=55bb8bd7e13f9b64c24c018f7fd54af5
 contrail-analytics-api.manifest md5=3c32d2266efad0ac42180bc28ed6c116
 contrail-schema.manifest        md5=4f34777fa04576a50bf4899d53f04683
+contrail-web.manifest           md5=a5e4a001dd715562f16cc81b49fd0b9f
 ifmap-server.manifest           md5=f27327ed74c803a53809aad5e26cbc45
 kube-network-manager.manifest   md5=d90ebcb37f2c5a308317642439f07e10
 rabbitmq.manifest               md5=fe26b2f66c2adfd94c85c1971be50267
 zookeeper.manifest              md5=c665836b3d5fe7b535d2c91a5efbb824
+redis.manifest                  md5=d5489945201a847f8bfeabdfccdc68ce
 
