@@ -16,6 +16,7 @@ function verify_contrail_listen_services() {
     netstat -anp | \grep LISTEN | \grep -w 6379 # redis
     netstat -anp | \grep LISTEN | \grep -w 8143 # WebUI
     netstat -anp | \grep LISTEN | \grep -w 8070 # WebUI
+    netstat -anp | \grep LISTEN | \grep -w 3000 # WebUI
 }
 
 function no_verify() {

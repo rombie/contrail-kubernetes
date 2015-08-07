@@ -15,12 +15,16 @@
 	    },
 	    "ports": [{
 		"name": "web-http",
-		"containerPort": 8079,
-		"hostPort": 8079
+		"containerPort": 8070,
+		"hostPort": 8070
 	    }, {
 		"name": "web-https",
 		"containerPort": 8143,
 		"hostPort": 8143
+	    }, {
+		"name": "web-jobs",
+		"containerPort": 3000,
+		"hostPort": 3000
 	    }],
 	    "volumeMounts": [
 		{
