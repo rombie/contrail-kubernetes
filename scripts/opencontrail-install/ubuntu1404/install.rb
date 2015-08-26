@@ -9,6 +9,7 @@
     "gcc",
     "python-lxml",
     "python-setuptools",
+    "python-software-properties",
     "software-properties-common",
     "sshpass",
     "strace",

@@ -125,7 +125,7 @@ parse_options
 require "#{@ws}/util"
 
 # Find platform OS
-sh(%{\grep -i "ubuntu 14" /etc/issue 2>&1 > /dev/null}, true)
+sh(%{\grep -ie ubuntu -e debian /etc/issue 2>&1 > /dev/null}, true)
 @platform = $?.to_i == 0 ? "ubuntu1404" : "fedora20"
 require "#{@ws}/#{@platform}/install"
 @utils = @platform =~ /fedora/ ?  "/opt/contrail/utils" :

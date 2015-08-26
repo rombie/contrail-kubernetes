@@ -2,6 +2,17 @@
 
 set -ex
 
+function contrail_docker_load_images() {
+    for i in $( wget -qO - https://raw.githubusercontent.com/rombie/kubernetes/release-1.0/cluster/saltbase/salt/top.sls |\grep contrail |\grep -v vrouter | awk '{print $2}'); do
+        wget -qO - https://raw.githubusercontent.com/rombie/kubernetes/release-1.0/cluster/saltbase/salt/$i/init.sls | \grep source: | awk '{print $3}' | xargs -n 1 wget -qO - | \grep \"image\": | awk -F '"' '{print $4}' | xargs -n1 echo docker run -P --net=host --name $i
+    done
+}
+
+function docker_pull_contrail_images() {
+    \grep source: /srv/salt/contrail-*/* | awk '{print $4}' | xargs -n 1 wget -qO - | \grep \"image\": | awk -F '"' '{print $4}' | xargs -n1 docker pull
+    cd /etc/kubernetes/manifests
+    \grep source: /srv/salt/contrail-*/* | awk '{print $4}' | xargs -n1 wget -q
+}
 function verify_contrail_listen_services() {
     netstat -anp | \grep LISTEN | \grep -w 5672 # RabbitMQ
     netstat -anp | \grep LISTEN | \grep -w 2181 # ZooKeeper
