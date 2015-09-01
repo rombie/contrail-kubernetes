@@ -10,8 +10,7 @@ function contrail_docker_load_images() {
 
 function docker_pull_contrail_images() {
     \grep source: /srv/salt/contrail-*/* | awk '{print $4}' | xargs -n 1 wget -qO - | \grep \"image\": | awk -F '"' '{print $4}' | xargs -n1 docker pull
-    cd /etc/kubernetes/manifests
-    \grep source: /srv/salt/contrail-*/* | awk '{print $4}' | xargs -n1 wget -q
+    (cd /etc/kubernetes/manifests && \grep source: /srv/salt/contrail-*/* | awk '{print $4}' | xargs -n1 wget -q)
 }
 function verify_contrail_listen_services() {
     netstat -anp | \grep LISTEN | \grep -w 5672 # RabbitMQ
