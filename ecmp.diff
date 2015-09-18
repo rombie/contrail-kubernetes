@@ -1,0 +1,688 @@
+commit 4fe4a683d69b5b245eecf2a36ee656961483d3d6
+Author: Ananth Suryanarayana <anantharamu@gmail.com>
+Date:   Thu Sep 17 15:27:43 2015 +0530
+
+    Initial set of changes for ecmp-hash
+
+diff --git a/src/bgp/.swp b/src/bgp/.swp
+deleted file mode 100644
+index 3c91a71..0000000
+Binary files a/src/bgp/.swp and /dev/null differ
+diff --git a/src/bgp/bgp_route.cc b/src/bgp/bgp_route.cc
+index b658fc6..cba5724 100644
+--- a/src/bgp/bgp_route.cc
++++ b/src/bgp/bgp_route.cc
+@@ -342,6 +342,9 @@ static void FillRoutePathExtCommunityInfo(const BgpTable *table,
+             TunnelEncapType::Encap id = encap.tunnel_encap();
+             show_path->tunnel_encap.push_back(
+                 TunnelEncapType::TunnelEncapToString(id));
++        } else if (ExtCommunity::is_load_balance(*it)) {
++            LoadBalance load_balance(*it);
++            show_path->communities.push_back(load_balance.ToString());
+         } else {
+             char temp[50];
+             int len = snprintf(temp, sizeof(temp), "ext community: ");
+diff --git a/src/bgp/bgp_xmpp_channel.cc b/src/bgp/bgp_xmpp_channel.cc
+index 91c7b7f..5cb9996 100644
+--- a/src/bgp/bgp_xmpp_channel.cc
++++ b/src/bgp/bgp_xmpp_channel.cc
+@@ -25,6 +25,7 @@
+ #include "bgp/inet/inet_table.h"
+ #include "bgp/inet6/inet6_route.h"
+ #include "bgp/inet6/inet6_table.h"
++#include "bgp/extended-community/load_balance.h"
+ #include "bgp/extended-community/mac_mobility.h"
+ #include "bgp/ermvpn/ermvpn_table.h"
+ #include "bgp/evpn/evpn_table.h"
+@@ -1181,6 +1182,10 @@ bool BgpXmppChannel::ProcessItem(string vrf_name,
+             ext.communities.push_back(mm.GetExtCommunityValue());
+         }
+ 
++        // Process load-balance extended community
++        LoadBalance load_balance(item.entry.load_balance);
++        ext.communities.push_back(sg.GetExtCommunityValue());
++
+         if (!ext.communities.empty())
+             attrs.push_back(&ext);
+ 
+@@ -1375,6 +1380,10 @@ bool BgpXmppChannel::ProcessInet6Item(string vrf_name,
+             ext.communities.push_back(mm.GetExtCommunityValue());
+         }
+ 
++        // Process load-balance extended community
++        LoadBalance load_balance(item.entry.load_balance);
++        ext.communities.push_back(sg.GetExtCommunityValue());
++
+         if (!ext.communities.empty()) {
+             attrs.push_back(&ext);
+         }
+@@ -1621,6 +1630,10 @@ bool BgpXmppChannel::ProcessEnetItem(string vrf_name,
+             ext.communities.push_back(mm.GetExtCommunityValue());
+         }
+ 
++        // Process load-balance extended community
++        // LoadBalance load_balance(item.entry.load_balance);
++        // ext.communities.push_back(sg.GetExtCommunityValue());
++
+         if (!ext.communities.empty())
+             attrs.push_back(&ext);
+ 
+diff --git a/src/bgp/community.h b/src/bgp/community.h
+index dee1e97..88d1c0a 100644
+--- a/src/bgp/community.h
++++ b/src/bgp/community.h
+@@ -245,6 +245,11 @@ public:
+         return (val[0] == 0x03) && (val[1] == 0x0C);
+     }
+ 
++    static bool is_load_balance(const ExtCommunityValue &val) {
++        // Load Balance extended community
++        return (val[0] == 0x03) && (val[1] == 0x0D);
++    }
++
+     friend std::size_t hash_value(ExtCommunity const &comm) {
+         size_t hash = 0;
+         for (ExtCommunityList::const_iterator iter = comm.communities_.begin();
+diff --git a/src/bgp/extended-community/SConscript b/src/bgp/extended-community/SConscript
+index 30e8895..b03d2a8 100644
+--- a/src/bgp/extended-community/SConscript
++++ b/src/bgp/extended-community/SConscript
+@@ -12,6 +12,7 @@ libextended_community = env.Library('extended_community',
+                                     ['default_gateway.cc',
+                                      'es_import.cc',
+                                      'esi_label.cc',
++                                     'load_balance.cc',
+                                      'mac_mobility.cc',
+                                      'site_of_origin.cc'])
+ 
+diff --git a/src/bgp/extended-community/load_balance.cc b/src/bgp/extended-community/load_balance.cc
+new file mode 100644
+index 0000000..0dfd9c9
+--- /dev/null
++++ b/src/bgp/extended-community/load_balance.cc
+@@ -0,0 +1,165 @@
++/*
++ * Copyright (c) 2015 Juniper Networks, Inc. All rights reserved.
++ */
++
++#include "bgp/extended-community/load_balance.h"
++
++#include <stdio.h>
++
++#include <algorithm>
++#include <string>
++
++#include "base/parse_object.h"
++
++using std::copy;
++using std::string;
++
++LoadBalance::LoadBalanceAttribute() {
++    value = 0; // reset all fields
++    type = 0x03;
++    sub_type = 0x0D;
++
++    l2_source_address = false;
++    l2_destination_address = false;
++    l3_source_address = true;
++    l3_destination_address = true;
++    l4_protocol = true;
++    l4_source_port = true;
++    l4_destination_port = true;
++    reserved1 = false;
++
++    reserved2 = 0;
++
++    source_bias = false;
++    reserved = 0;
++
++    reserved3 = 0;
++    reserved4 = 0;
++    reserved5 = 0;
++}
++
++LoadBalance::LoadBalanceAttribute(uint64_t value) : value(value) { }
++
++void LoadBalance::LoadBalanceAttribute::encode(
++        autogen::ItemType::EntryType::LoadBalanceType &item) const {
++
++    item.load_balance_fields.load_balance_field_list.clear();
++    if (l2_source_address)
++        item.load_balance_fields.load_balance_field_list.push_back(
++                string("l2-source-address"));
++    if (l2_destination_address)
++        item.load_balance_fields.load_balance_field_list.push_back(
++                string("l2-destination-address"));
++    if (l3_source_address)
++        item.load_balance_fields.load_balance_field_list.push_back(
++                string("l3-source-address"));
++    if (l3_destination_address)
++        item.load_balance_fields.load_balance_field_list.push_back(
++                string("l3-destination-address"));
++    if (l4_protocol)
++        item.load_balance_fields.load_balance_field_list.push_back(
++                string("l4-protocol"));
++    if (l4_source_port)
++        item.load_balance_fields.load_balance_field_list.push_back(
++                string("l4-source-port"));
++    if (l4_destination_port)
++        item.load_balance_fields.load_balance_field_list.push_back(
++                string("l4-destination-port"));
++
++    if (source_bias)
++        item.load_balance_decision = string("source-bias")
++    else
++        item.load_balance_decision = string("load-balance-field-hash")
++}
++
++LoadBalance::LoadBalance() {
++    struct LoadBalance::LoadBalanceAttribute attr;
++    put_value(&data_, data_.size(), attr.value);
++}
++
++LoadBalance::LoadBalance(const bytes_type &data) {
++    copy(data.begin(), data.end(), data_.begin());
++}
++
++LoadBalance::LoadBalance(const LoadBalance::LoadBalanceAttribute &attr) {
++    put_value(&data_, data_.size(), attr.value);
++}
++
++LoadBalance::LoadBalance(const
++        autogen::ItemType::EntryType::LoadBalanceType &item) {
++    struct LoadBalance::LoadBalanceAttribute attr;
++
++    attr.l2_source_address = false;
++    attr.l2_destination_address = false;
++    attr.l3_source_address = false;
++    attr.l3_destination_address = false;
++    attr.l4_protocol = false;
++    attr.l4_source_port = false;
++    attr.l4_destination_port = false;
++
++    for (string s : item.load_balance_fields.load_balance_field_list) {
++        if (s == "l2-source-address") {
++            attr.l2_source_address = true;
++            continue;
++        }
++        if (s == "l2-destination-address") {
++            attr.l2_destination_address = true;
++            continue;
++        }
++        if (s == "l3-source-address") {
++            attr.l3_source_address = true;
++            continue;
++        }
++        if (s == "l3-destination-address") {
++            attr.l3_destination_address = true;
++            continue;
++        }
++        if (s == "l4-protocol") {
++            attr.l4_protocol = true;
++            continue;
++        }
++        if (s == "l4-source-port") {
++            attr.l4_source_port = true;
++            continue;
++        }
++        if (s == "l4-destination-port") {
++            attr.l4_destination_port = true;
++            continue;
++        }
++    }
++
++    if (item.load_balance_decision == "source-bias")
++        attr.load_balance_decision = true;
++    else
++        attr.load_balance_decision = false;
++    put_value(&data_, data_.size(), attr.value);
++}
++
++void LoadBalance::getAttribute(struct LoadBalance::LoadBalanceAttribute &attr) {
++    attr.value = get_value(&data_[0], data_.size());
++}
++
++LoadBalance::LoadBalanceAttribute LoadBalance::ToAttribute() const {
++    return LoadBalance::LoadBalanceAttribute(
++               get_value(&data_[0], data_.size()));
++}
++
++std::string LoadBalance::ToString() const {
++    LoadBalance::LoadBalanceAttribute attr = ToAttribute();
++    ostringstream os;
++    os << "loadbalane:\n";
++    os << "  fields:\n";
++    os << "    l2_source_address: " <<
++        (attr.l2_source_address ? "Y" : "N") << "\n";
++    os << "    l2_destination_address: " <<
++        (attr.l2_destination_address ? "Y" : "N") << "\n";
++    os << "    l3_source_address: " <<
++        (attr.l3_source_address ? "Y" : "N") << "\n";
++    os << "    l3_destination_address: " <<
++        (attr.l3_destination_address ? "Y" : "N") << "\n";
++    os << "    l4_protocol: " << (attr.l4_protocol ? "Y" : "N") << "\n";
++    os << "    l4_source_port: " << (attr.l4_source_port ? "Y" : "N") << "\n";
++    os << "    l4_source_port: " << (attr.l4_source_port ? "Y" : "N") << "\n";
++    os << "  source_bias " << (attr.source_bias ? "Y" : "N") << "\n";
++    return os.str();
++}
+diff --git a/src/bgp/extended-community/load_balance.h b/src/bgp/extended-community/load_balance.h
+new file mode 100644
+index 0000000..b923e0a
+--- /dev/null
++++ b/src/bgp/extended-community/load_balance.h
+@@ -0,0 +1,97 @@
++/*
++ * Copyright (c) 2015 Juniper Networks, Inc. All rights reserved.
++ */
++
++#ifndef SRC_BGP_EXTENDED_COMMUNITY_LOAD_BALANCE_H_
++#define SRC_BGP_EXTENDED_COMMUNITY_LOAD_BALANCE_H_
++
++#include <boost/array.hpp>
++#include <boost/system/error_code.hpp>
++
++#include <string>
++
++#include "base/parse_object.h"
++
++class LoadBalance {
++public:
++    static const int kSize = 8;
++    typedef boost::array<uint8_t, kSize> bytes_type;
++
++    struct LoadBalanceAttribute {
++        union {
++            struct {
++#ifdef __BIG_ENDIAN__
++                // Opaque extended community header
++                uint8_t type; // 0x03 or 0x43
++                uint8_t sub_type; // SubType TBA (0x0D)
++
++                // ecmp hash fields selection list
++                uint8_t l2_source_address:1;
++                uint8_t l2_destination_address:1;
++                uint8_t l3_source_address:1;      // Set by default
++                uint8_t l3_destination_address:1; // Set by default
++                uint8_t l4_protocol:1;            // Set by default
++                uint8_t l4_source_port:1;         // Set by default
++                uint8_t l4_destination_port:1;    // Set by default
++                uint8_t reserved1:1;
++
++                uint8_t  reserved2; // For future fields such as interface
++
++                // Misc boolean actions
++                uint8_t  source_bias:1;
++                uint8_t  reserved3:7;
++
++                uint8_t  reserved4;
++                uint8_t  reserved5;
++                uint8_t  reserved6;
++#else
++                uint8_t  reserved2; // For future fields such as interface
++
++                // ecmp hash fields selection list
++                uint8_t l2_source_address:1;
++                uint8_t l2_destination_address:1;
++                uint8_t l3_source_address:1;      // Set by default
++                uint8_t l3_destination_address:1; // Set by default
++                uint8_t l4_protocol:1;            // Set by default
++                uint8_t l4_source_port:1;         // Set by default
++                uint8_t l4_destination_port:1;    // Set by default
++                uint8_t reserved1:1;
++
++                // Opaque extended community header
++                uint8_t sub_type; // SubType TBA (0x0D)
++                uint8_t type; // 0x03 or 0x43
++
++                uint8_t  reserved6;
++                uint8_t  reserved5;
++                uint8_t  reserved4;
++
++                // Misc boolean actions
++                uint8_t  source_bias:1;
++                uint8_t  reserved3:7;
++#endif
++           };
++           uint64_t value_;
++        };
++        LoadBalanceAttribute();
++        LoadBalanceAttribute(uint64_t value);
++        void encode(autogen::ItemType::EntryType::LoadBalanceType &) const;
++    } PACKED;
++
++    explicit LoadBalance();
++    explicit LoadBalance(const bytes_type &data);
++    explicit LoadBalance(const LoadBalance::LoadBalanceAttribute &attr);
++    explicit LoadBalance::LoadBalance(
++            const autogen::ItemType::EntryType::LoadBalanceType &item);
++
++    uint8_t Type() const { return data_[0]; }
++    uint8_t Subtype() const { return data_[1]; }
++    const bytes_type &GetExtCommunity() const { return data_; }
++    const uint64_t GetExtCommunityValue() const {
++        return get_value(data_.begin(), 8);
++    }
++    std::string ToString() const;
++private:
++    bytes_type data_;
++};
++
++#endif  // SRC_BGP_EXTENDED_COMMUNITY_LOAD_BALANCE_H_
+diff --git a/src/bgp/extended-community/test/SConscript b/src/bgp/extended-community/test/SConscript
+index e189797..0213d60 100644
+--- a/src/bgp/extended-community/test/SConscript
++++ b/src/bgp/extended-community/test/SConscript
+@@ -32,12 +32,17 @@ site_of_origin_test = env.UnitTest('site_of_origin_test',
+                                    ['site_of_origin_test.cc'])
+ env.Alias('src/bgp/extended-community:site_of_origin_test', site_of_origin_test)
+ 
++load_balance_test = env.UnitTest('load_balance_test',
++                                   ['load_balance_test.cc'])
++env.Alias('src/bgp/extended-community:load_balance_test', load_balance_test)
++
+ test_suite = [
+     default_gateway_test,
+     es_import_test,
+     esi_label_test,
+     mac_mobility_test,
+     site_of_origin_test,
++    load_balance_test,
+ ]
+ 
+ test = env.TestSuite('bgp-test', test_suite)
+diff --git a/src/bgp/extended-community/test/load_balance_test.cc b/src/bgp/extended-community/test/load_balance_test.cc
+new file mode 100644
+index 0000000..0c08c5e
+--- /dev/null
++++ b/src/bgp/extended-community/test/load_balance_test.cc
+@@ -0,0 +1,187 @@
++/*
++ * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
++ */
++
++#include "bgp/extended-community/load_balance.h"
++
++#include "base/logging.h"
++#include "testing/gunit.h"
++
++using namespace std;
++
++class LoadBalanceTest : public ::testing::Test {
++};
++
++TEST_F(LoadBalanceTest, Default_1) {
++    LoadBalance lb;
++    LoadBalance::LoadBalanceAttribute lba = lb.ToAttribute();
++
++    EXPECT_EQ(0x03, lb.Type());
++    EXPECT_EQ(0x0D, lb.Subtype());
++
++    EXPECT_EQ(0x03, lba.type);
++    EXPECT_EQ(0x0D, lba.sub_type);
++    EXPECT_FALSE(lba.l2_source_address);
++    EXPECT_FALSE(lba.l2_destination_address);
++    EXPECT_FALSE(lba.l3_source_address);
++    EXPECT_FALSE(lba.l3_destination_address);
++    EXPECT_FALSE(lba.l4_protocol);
++    EXPECT_FALSE(lba.source_port);
++    EXPECT_FALSE(lba.destination_port);
++    EXPECT_FALSE(lba.reserved1);
++
++    EXPECT_EQ(0, lba.reserved2);
++
++    EXPECT_FALSE(lba.source_bias);
++    EXPECT_EQ(0, lba.reserved3);
++
++    EXPECT_EQ(0, lba.reserved4);
++    EXPECT_EQ(0, lba.reserved5);
++    EXPECT_EQ(0, lba.reserved6);
++}
++
++// Set all boolean options
++TEST_F(LoadBalanceTest, AllBooleanSet_1) {
++    LoadBalance::bytes_type data =
++        { { 0x03, 0x0D, 0xfe, 0x00, 0xC0, 0x00, 0x00, 0x00 } };
++    LoadBalance lb(data);
++    LoadBalance::LoadBalanceAttribute lba = lb.ToAttribute();
++
++    EXPECT_EQ(0x03, lb.Type());
++    EXPECT_EQ(0x0D, lb.Subtype());
++
++    EXPECT_EQ(0x03, lba.type);
++    EXPECT_EQ(0x0D, lba.sub_type);
++    EXPECT_TRUE(lba.l2_source_address);
++    EXPECT_TRUE(lba.l2_destination_address);
++    EXPECT_TRUE(lba.l3_source_address);
++    EXPECT_TRUE(lba.l3_destination_address);
++    EXPECT_TRUE(lba.l4_protocol);
++    EXPECT_TRUE(lba.source_port);
++    EXPECT_TRUE(lba.destination_port);
++    EXPECT_FALSE(lba.reserved1);
++
++    EXPECT_EQ(0, lba.reserved2);
++
++    EXPECT_TRUE(lba.source_bias);
++    EXPECT_EQ(0, lba.reserved3);
++
++    EXPECT_EQ(0, lba.reserved4);
++    EXPECT_EQ(0, lba.reserved5);
++    EXPECT_EQ(0, lba.reserved6);
++
++    // Reconstruct community from the attribute and verify data
++    LoadBalance lb2(lba);
++    EXPECT_EQ(data, lb2.GetExtCommunity());
++}
++
++// Reset all boolean options
++TEST_F(LoadBalanceTest, AllBooleanSet_2) {
++    LoadBalance::bytes_type data =
++        { { 0x03, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
++    LoadBalance lb(data);
++    LoadBalance::LoadBalanceAttribute lba = lb.ToAttribute();
++
++    EXPECT_EQ(0x03, lb.Type());
++    EXPECT_EQ(0x0D, lb.Subtype());
++
++    EXPECT_EQ(0x03, lba.type);
++    EXPECT_EQ(0x0D, lba.sub_type);
++    EXPECT_FALSE(lba.l2_source_address);
++    EXPECT_FALSE(lba.l2_destination_address);
++    EXPECT_FALSE(lba.l3_source_address);
++    EXPECT_FALSE(lba.l3_destination_address);
++    EXPECT_FALSE(lba.l4_protocol);
++    EXPECT_FALSE(lba.source_port);
++    EXPECT_FALSE(lba.destination_port);
++    EXPECT_FALSE(lba.reserved1);
++
++    EXPECT_EQ(0, lba.reserved2);
++
++    EXPECT_FALSE(lba.source_bias);
++    EXPECT_EQ(0, lba.reserved3);
++
++    EXPECT_EQ(0, lba.reserved4);
++    EXPECT_EQ(0, lba.reserved5);
++    EXPECT_EQ(0, lba.reserved6);
++
++    // Reconstruct community from the attribute and verify data
++    LoadBalance lb2(lba);
++    EXPECT_EQ(data, lb2.GetExtCommunity());
++}
++
++// Set all boolean options alternately
++TEST_F(LoadBalanceTest, AllBooleanSet_3) {
++    LoadBalance::bytes_type data =
++        { { 0x03, 0x0D, 0xaa, 0x00, 0x80, 0x00, 0x00, 0x00 } };
++    LoadBalance lb(data);
++    LoadBalance::LoadBalanceAttribute lba = lb.ToAttribute();
++
++    EXPECT_EQ(0x03, lb.Type());
++    EXPECT_EQ(0x0D, lb.Subtype());
++
++    EXPECT_EQ(0x03, lba.type);
++    EXPECT_EQ(0x0D, lba.sub_type);
++    EXPECT_TRUE(lba.l2_source_address);
++    EXPECT_FALSE(lba.l2_destination_address);
++    EXPECT_TRUE(lba.l3_source_address);
++    EXPECT_FALSE(lba.l3_destination_address);
++    EXPECT_TRUE(lba.l4_protocol);
++    EXPECT_FALSE(lba.source_port);
++    EXPECT_TRUE(lba.destination_port);
++    EXPECT_FALSE(lba.reserved1);
++
++    EXPECT_EQ(0, lba.reserved2);
++
++    EXPECT_TRUE(lba.source_bias);
++    EXPECT_EQ(0, lba.reserved3);
++
++    EXPECT_EQ(0, lba.reserved4);
++    EXPECT_EQ(0, lba.reserved5);
++    EXPECT_EQ(0, lba.reserved6);
++
++    // Reconstruct community from the attribute and verify data
++    LoadBalance lb2(lba);
++    EXPECT_EQ(data, lb2.GetExtCommunity());
++}
++
++// Reset all boolean options
++TEST_F(LoadBalanceTest, AllBooleanSet_4) {
++    LoadBalance::bytes_type data =
++        { { 0x03, 0x0D, 0x54, 0x00, 0x40, 0x00, 0x00, 0x00 } };
++    LoadBalance lb(data);
++    LoadBalance::LoadBalanceAttribute lba = lb.ToAttribute();
++
++    EXPECT_EQ(0x03, lb.Type());
++    EXPECT_EQ(0x0D, lb.Subtype());
++
++    EXPECT_EQ(0x03, lba.type);
++    EXPECT_EQ(0x0D, lba.sub_type);
++    EXPECT_FALSE(lba.l2_source_address);
++    EXPECT_TRUE(lba.l2_destination_address);
++    EXPECT_FALSE(lba.l3_source_address);
++    EXPECT_TRUE(lba.l3_destination_address);
++    EXPECT_FALSE(lba.l4_protocol);
++    EXPECT_TRUE(lba.source_port);
++    EXPECT_FALSE(lba.destination_port);
++    EXPECT_FALSE(lba.reserved1);
++
++    EXPECT_EQ(0, lba.reserved2);
++
++    EXPECT_FALSE(lba.source_bias);
++    EXPECT_EQ(0, lba.reserved3);
++
++    EXPECT_EQ(0, lba.reserved4);
++    EXPECT_EQ(0, lba.reserved5);
++    EXPECT_EQ(0, lba.reserved6);
++
++    // Reconstruct community from the attribute and verify data
++    LoadBalance lb2(lba);
++    EXPECT_EQ(data, lb2.GetExtCommunity());
++}
++
++int main(int argc, char **argv) {
++    ::testing::InitGoogleTest(&argc, argv);
++    int result = RUN_ALL_TESTS();
++    return result;
++}
+diff --git a/src/bgp/xmpp_message_builder.cc b/src/bgp/xmpp_message_builder.cc
+index bfb7a40..fec5333 100644
+--- a/src/bgp/xmpp_message_builder.cc
++++ b/src/bgp/xmpp_message_builder.cc
+@@ -16,6 +16,7 @@
+ #include "bgp/bgp_route.h"
+ #include "bgp/routing-instance/routing_instance.h"
+ #include "bgp/bgp_table.h"
++#include "bgp/extended-community/load_balance.h"
+ #include "bgp/extended-community/mac_mobility.h"
+ #include "bgp/ermvpn/ermvpn_route.h"
+ #include "bgp/evpn/evpn_route.h"
+@@ -84,6 +85,7 @@ private:
+     string repr_new_;
+     size_t repr_part1_;
+     size_t repr_part2_;
++    struct LoadBalanceAttribute load_balance_attribute_;
+ 
+     DISALLOW_COPY_AND_ASSIGN(BgpXmppMessage);
+ };
+@@ -111,6 +113,8 @@ void BgpXmppMessage::ProcessExtCommunity(const ExtCommunity *ext_community) {
+             virtual_network_ =
+                 manager->GetVirtualNetworkByVnIndex(origin_vn.vn_index());
+         } else if (ExtCommunity::is_load_balance(*iter)) {
++            LoadBalance load_balance(*iter);
++            load_balance.getAttribute(load_balance_attribute_);
+         }
+     }
+ }
+@@ -216,6 +220,9 @@ void BgpXmppMessage::AddIpReach(const BgpRoute *route,
+         item.entry.security_group_list.security_group.push_back(*it);
+     }
+ 
++    // Encode load balance attribute.
++    load_balance_attribute_.encode(item.entry.load_balance);
++
+     xml_node node = xitems_.append_child("item");
+     node.append_attribute("id") = route->ToXmppIdString().c_str();
+     item.Encode(&node);
+@@ -292,6 +299,9 @@ void BgpXmppMessage::AddEnetReach(const BgpRoute *route,
+         item.entry.security_group_list.security_group.push_back(*it);
+     }
+ 
++    // Encode load balance attribute.
++    // load_balance_attribute_.encode(item.entry.load_balance);
++
+     const BgpOList *olist = roattr->attr()->olist().get();
+     assert((olist == NULL) != roattr->nexthop_list().empty());
+ 
+diff --git a/src/schema/.xmpp_unicast.xsd.swp b/src/schema/.xmpp_unicast.xsd.swp
+deleted file mode 100644
+index e664ad7..0000000
+Binary files a/src/schema/.xmpp_unicast.xsd.swp and /dev/null differ
+diff --git a/src/schema/xmpp_unicast.xsd b/src/schema/xmpp_unicast.xsd
+index b24dda4..57eeca8 100644
+--- a/src/schema/xmpp_unicast.xsd
++++ b/src/schema/xmpp_unicast.xsd
+@@ -36,7 +36,35 @@ xsd:targetNamespace="http://www.contrailsystems.com/bgp-l3vpn-unicast-cfg.xsd">
+ 
+ <xsd:complexType name="SecurityGroupListType">
+     <xsd:element name="security-group" type="xsd:integer" maxOccurs="unbounded"/>
+-</xsd:complexType> 
++</xsd:complexType>
++
++<xsd:simpleType name="LoadBalanceFieldType">
++    <xsd:restriction base="xsd:string">
++        <xsd:enumeration value="l2-source-address"/>
++        <xsd:enumeration value="l2-destination-address"/>
++        <xsd:enumeration value="l3-source-address"/>
++        <xsd:enumeration value="l3-destination-address"/>
++        <xsd:enumeration value="l4-protocol"/>
++        <xsd:enumeration value="l4-source-port"/>
++        <xsd:enumeration value="l4-destination-port"/>
++    </xsd:restriction>
++</xsd:simpleType>
++
++<xsd:complexType name="LoadBalnceFieldListType">
++    <xsd:element name="load-balance-field-list" type="LoadBalanceFieldType" maxOccurs="unbounded"/>
++</xsd:complexType>
++
++<xsd:simpleType name="LoadBalanceDecision">
++    <xsd:restriction base="xsd:string">
++        <xsd:enumeration value="load-balance-field-hash"/>
++        <xsd:enumeration value="source-bias"/>
++    </xsd:restriction>
++</xsd:simpleType>
++
++<xsd:complexType name="LoadBalanceType">
++    <xsd:element name="load-balance-fields" type="LoadBalnceFieldListType"/>
++    <xsd:element name="load-balance-decision" type="LoadBalanceDecision"/>
++</xsd:complexType>
+ 
+ <xsd:complexType name="EntryType">
+     <xsd:all>
+@@ -47,6 +75,7 @@ xsd:targetNamespace="http://www.contrailsystems.com/bgp-l3vpn-unicast-cfg.xsd">
+         <xsd:element name="sequence-number" type="xsd:integer"/>
+         <xsd:element name="security-group-list" type="SecurityGroupListType"/>
+         <xsd:element name="local-preference" type="xsd:integer"/>
++        <xsd:element name="load-balance" type="LoadBalanceType"/>
+     </xsd:all>
+ </xsd:complexType>
+ 
